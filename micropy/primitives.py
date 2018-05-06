@@ -41,3 +41,17 @@ def f(str_):
 
     finally:
         del frame
+
+
+def raises(ExcType):
+    # type: (Exception) -> Callable
+    """Returns a function that will raise an exception of specified type
+    when called. The exception receives the called functions
+    parameters.
+
+    """
+
+    def raiser(*args, **kwargs):
+        raise ExcType(*args, **kwargs)
+
+    return raiser
