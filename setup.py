@@ -7,8 +7,6 @@ except ImportError:
 
 import micropy
 
-def foo(bar):
-    return bar+1
 
 setup(
     name='micropy',

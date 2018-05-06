@@ -24,4 +24,3 @@ def pipe(invalue, *chain):
         val = step(val)
 
     return val
-
