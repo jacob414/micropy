@@ -1,6 +1,6 @@
 import pytest
 
-import primitives as P
+import micropy.primitives as P
 
 
 @pytest.fixture
