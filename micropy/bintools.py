@@ -24,12 +24,12 @@ class ops:
     """
 
     @staticmethod
-    def shiftl(val, steps):
+    def shiftl(steps, val):
         # type: (int, int) -> int
         "Shift left as a function. For use in functional patterns."
         return val << steps
 
     @staticmethod
-    def shiftr(val, steps):
+    def shiftr(steps, val):
         # type: (int, int) -> int
         return val >> steps

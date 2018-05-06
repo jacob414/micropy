@@ -22,10 +22,10 @@ def test_hexdump():
 def test_shiftl_fn():
     # type: () -> None
     "Should have a correct shift left function"
-    assert bintools.ops.shiftl(10, 2) == 10 << 2
+    assert bintools.ops.shiftl(2, 10) == 10 << 2
 
 
 def test_shiftr_fn():
     # type: () -> None
     "Should have a correct shift right function"
-    assert bintools.ops.shiftr(10, 2) == 10 >> 2
+    assert bintools.ops.shiftr(2, 10) == 10 >> 2
