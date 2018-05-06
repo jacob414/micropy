@@ -35,3 +35,10 @@ def test_pipe0():
     afn = lambda x: x + 1
     bfn = lambda x: x + 2
     assert P.pipe(10, afn, bfn) == 13
+
+
+def test_f():
+    # type: () -> None
+    "Should expand a 'poor mans f-string'"
+    foo = 'bar'
+    assert P.f('foo {foo}') == 'foo bar'

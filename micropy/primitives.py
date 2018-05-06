@@ -1,4 +1,5 @@
 from itertools import islice
+import inspect
 
 
 def head(gen):
@@ -24,3 +25,19 @@ def pipe(invalue, *chain):
         val = step(val)
 
     return val
+
+
+def f(str_):
+    """
+    Poor man's f-strings (e.g. if you are stuck on Python 2).
+    
+    Caller `locals()` expansion technique, thanks Gareth Rees,
+    http://stackoverflow.com/a/6618825/288672
+    """
+
+    frame = inspect.currentframe()
+    try:
+        return str_.format(** frame.f_back.f_locals)
+
+    finally:
+        del frame
