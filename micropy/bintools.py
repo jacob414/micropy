@@ -15,3 +15,21 @@ def snv(value, width=8):
 def hexdump(bytes_):
     # type: (bytes) -> str
     return ' '.join(format(ord(x), 'x').zfill(2) for x in bytes_)
+
+
+class ops:
+    """Functions for bitwise operations. For use in e.g. generator
+    expressions, `map()`, `filter()` etc.
+
+    """
+
+    @staticmethod
+    def shiftl(val, steps):
+        # type: (int, int) -> int
+        "Shift left as a function. For use in functional patterns."
+        return val << steps
+
+    @staticmethod
+    def shiftr(val, steps):
+        # type: (int, int) -> int
+        return val >> steps

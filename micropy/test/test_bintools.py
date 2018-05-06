@@ -17,3 +17,15 @@ def test_hexdump():
     # type: () -> None
     "Should print a pleasantly spaced hex dump of a string"
     assert bintools.hexdump('\x01\x02\x03\x3a') == '01 02 03 3a'
+
+
+def test_shiftl_fn():
+    # type: () -> None
+    "Should have a correct shift left function"
+    assert bintools.ops.shiftl(10, 2) == 10 << 2
+
+
+def test_shiftr_fn():
+    # type: () -> None
+    "Should have a correct shift right function"
+    assert bintools.ops.shiftr(10, 2) == 10 >> 2
