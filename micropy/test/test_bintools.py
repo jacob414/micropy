@@ -1,4 +1,4 @@
-import bintools
+from micropy import bintools
 
 
 def test_binstr():
