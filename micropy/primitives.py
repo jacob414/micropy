@@ -27,6 +27,23 @@ def pipe(invalue, *chain):
     return val
 
 
+class PipingExperiment(object):
+
+    """An experiment pushing the pipe concept a bit longer. Not sure where
+    I'm going with this but curious.
+
+    """
+    
+    def __init__(self, seed):
+        # type: (Any) -> PipingExperiment
+        self.result = seed
+
+    def __or__(self, step):
+        # type: (Callable) -> PipingExperiment
+        self.result = step(self.result)
+        return self
+
+
 def f(str_):
     """
     Poor man's f-strings (e.g. if you are stuck on Python 2).

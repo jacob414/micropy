@@ -37,6 +37,15 @@ def test_pipe0():
     assert P.pipe(10, afn, bfn) == 13
 
 
+
+def test_pipe_experiment():
+    # type: () -> None
+    "Should 1. add 1, 2. add 1, 3. profit?"
+    incr = lambda x: x+1
+    showr = "It is {}!".format
+    assert (P.PipingExperiment(5) | incr | incr | showr).result == "It is 7!"
+
+
 class ExceptionType(Exception):
 
     def __init__(self, msg, **kw):
