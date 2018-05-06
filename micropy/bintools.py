@@ -5,15 +5,10 @@ def binstr(value, width=8):
     return format(value, fmt).strip().replace('0b', '').zfill(width)
 
 
-def nv(value, width=8):
-    # type: (int, int) -> str
-    return binstr(value, width)
-
-
 def snv(value, width=8):
     # type: (int, int) -> str
     return '  '.join(
-        idx % 2 == 2 and ch + ' ' or ch for idx, ch in enumerate(nv(value))
+        idx % 2 == 2 and ch + ' ' or ch for idx, ch in enumerate(binstr(value))
     )
 
 

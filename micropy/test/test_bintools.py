@@ -7,12 +7,6 @@ def test_binstr():
     assert bintools.binstr(0b101) == '00000101'
 
 
-def test_nv():
-    # type: () -> None
-    "Should be a convenient application of binstr()"
-    assert bintools.nv(0b101) == '00000101'
-
-
 def test_snv():
     # type: () -> None
     "Should convert an int to a plesantly spaced string"
