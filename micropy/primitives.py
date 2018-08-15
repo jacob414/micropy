@@ -1,6 +1,8 @@
 from itertools import islice
 import inspect
 
+from pysistence import Expando
+
 
 def head(gen):
     # type: (Generator) -> Generator[Any, Any, Any]
@@ -28,12 +30,11 @@ def pipe(invalue, *chain):
 
 
 class PipingExperiment(object):
-
     """An experiment pushing the pipe concept a bit longer. Not sure where
     I'm going with this but curious.
 
     """
-    
+
     def __init__(self, seed):
         # type: (Any) -> PipingExperiment
         self.result = seed
@@ -75,3 +76,26 @@ def raises(ExcType):
         raise ExcType(*args, **kwargs)
 
     return raiser
+
+
+# addr_ = lambda y: lambda: lambda x: x + y
+
+# class ops:
+
+#     addr = staticmethod(addr_)
+
+#     incr = staticmethod(lambda: ops.addr(1))
+
+#     inc = staticmethod(lambda x: addr_(1)(x))
+
+
+class XE(Expando):
+    __getitem__ = lambda self, attr: getattr(self, attr)
+    iteritems = lambda self: self.to_dict().iteritems()
+
+    def __init__(self, mapping):
+        # type: (XE, dict) -> None
+        super().__init__(**mapping)
+
+    def get(self, name, default=None):
+        return self.to_dict().get(name, default)

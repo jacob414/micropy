@@ -37,12 +37,12 @@ def test_pipe0():
     assert P.pipe(10, afn, bfn) == 13
 
 
-
 def test_pipe_experiment():
     # type: () -> None
     "Should 1. add 1, 2. add 1, 3. profit?"
-    incr = lambda x: x+1
+    incr = lambda x: x + 1
     showr = "It is {}!".format
+
     assert (P.PipingExperiment(5) | incr | incr | showr).result == "It is 7!"
 
 
@@ -63,3 +63,12 @@ def test_raises_by_type():
 
     assert exc.message == 'foo'
     assert exc.bar == 'baz'
+
+@pytest.fixture
+def xe():
+    yield P.XE({'foo': 'foo', 'bar': 'bar'})
+
+def test_xe_as_dict(xe):
+    # type: () -> None
+    "Should be able to index XE object as dictionaries"
+    assert xe['foo'] == 'foo'
