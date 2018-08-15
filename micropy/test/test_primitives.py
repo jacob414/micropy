@@ -69,6 +69,6 @@ def xe():
     yield P.XE({'foo': 'foo', 'bar': 'bar'})
 
 def test_xe_as_dict(xe):
-    # type: () -> None
+    # type: (P.XE) -> None
     "Should be able to index XE object as dictionaries"
     assert xe['foo'] == 'foo'
