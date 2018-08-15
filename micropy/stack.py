@@ -3,7 +3,6 @@ from .primitives import XE
 from funcy import merge
 
 def full():
-    # import ipdb; ipdb.set_trace()
     # all_ = XE(**dict(globals(), **locals()))
     all_ = XE()
     try:
@@ -25,6 +24,5 @@ from pprint import pprint
 
 
 _st = name()
-import ipdb; ipdb.set_trace()
 # pprint(_st)
 
