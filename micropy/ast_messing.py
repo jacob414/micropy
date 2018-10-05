@@ -18,10 +18,10 @@ def alien():
     third()
     foo = 'bar'
 
-def apply(tree, name='expanded'):
+def eval_(tree, name='expanded'):
     code = compile(tree, 'name', 'single')
     local = {}
-    xx = eval(code, globals(), local)
+    eval(code, globals(), local)
     return (v for v in local.values())
 
 if __name__ == '__main__':
@@ -34,6 +34,6 @@ if __name__ == '__main__':
         body.insert(idx, stmnt)
         idx += 1
 
-    for x in apply(tree):
+    for x in eval_(tree):
         x()
 
