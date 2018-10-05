@@ -1,24 +1,32 @@
 # -*- coding: utf-8 -*-
 import patterns
 from patterns import helpers
-from copy import copy
+from altered import E
 
 import ast
+
+def third():
+    print('third')
 
 def messing():
     print('rad 1')
     print(foo)
-    return 'returvärde'
 
 def alien():
     print('alien 1!')
     print('alien 2!')
+    third()
     foo = 'bar'
+
+def apply(tree, name='expanded'):
+    code = compile(tree, 'name', 'single')
+    local = {}
+    xx = eval(code, globals(), local)
+    return (v for v in local.values())
 
 if __name__ == '__main__':
     tree = patterns.get_ast(messing)
     body = tree.body[0].body
-    # call = ast.Expr(value=helpers.make_call('alien'))
 
     abody = patterns.get_ast(alien).body
     idx = 0
@@ -26,12 +34,6 @@ if __name__ == '__main__':
         body.insert(idx, stmnt)
         idx += 1
 
-    # body.insert(0, abody[0].body[0])
-
-    local = {}
-    ast.fix_missing_locations(tree)
-    code = compile(tree, 'foo', 'single')
-    eval(code, {}, local)
-
-    local['messing']()
+    for x in apply(tree):
+        x()
 
