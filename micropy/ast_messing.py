@@ -29,6 +29,25 @@ def eval_(tree, name='expanded'):
     return (v for v in local.values())
 
 
-if __name__ == '__main__':
-    import ipdb
-    ipdb.set_trace()
+class FuncLister(ast.NodeVisitor):
+    def visit_FunctionDef(self, node):
+        print(f'Visiting {node.name}..')
+        self.generic_visit(node)
+
+
+def transform(VisitorCls):
+    # type: (VisitorCls) -> None
+    "Does transform"
+    def visit_(fn):
+        xx = patterns.get_ast(fn)
+        FuncLister().visit(xx)
+
+    return visit_
+
+
+@transform(FuncLister)
+def entry():
+    # type: () -> None
+    "Does entry"
+    return 'entry'
+
