@@ -5,12 +5,15 @@ from altered import E
 
 import ast
 
+
 def third():
     print('third')
+
 
 def messing():
     print('rad 1')
     print(foo)
+
 
 def alien():
     print('alien 1!')
@@ -18,22 +21,14 @@ def alien():
     third()
     foo = 'bar'
 
+
 def eval_(tree, name='expanded'):
     code = compile(tree, 'name', 'single')
     local = {}
     eval(code, globals(), local)
     return (v for v in local.values())
 
+
 if __name__ == '__main__':
-    tree = patterns.get_ast(messing)
-    body = tree.body[0].body
-
-    abody = patterns.get_ast(alien).body
-    idx = 0
-    for stmnt in abody[0].body:
-        body.insert(idx, stmnt)
-        idx += 1
-
-    for x in eval_(tree):
-        x()
-
+    import ipdb
+    ipdb.set_trace()
