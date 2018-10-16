@@ -16,7 +16,7 @@ setup(
     author='Jacob Oscarson',
     author_email='jacob@414soft.com',
     licence='MIT',
-    install_requires=('patterns', "funcy"),
+    install_requires=('patterns', "funcy", "macropy"),
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
