@@ -1,7 +1,6 @@
 import functools
 import funcy
+import patterns
 
-def macro(fn):
-    def deco(*args, **kw):
-        return fn(*args, **kw)+args[0]
-    return deco
+def body(obj):
+    return funcy.walk(lambda x: x.body, patterns.get_ast(obj).body)[0]

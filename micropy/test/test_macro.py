@@ -1,11 +1,12 @@
-from micropy.macro import macro
+from micropy import macro
 
-def test_poc():
+def inline(x):
+    100
+    101
+
+
+def test_body():
     # type: () -> None
     "Should poc"
-    @macro
-    def expanded(x):
-        return 'x'
-    assert expanded('y') == 'xy'
-
-
+    xx = macro.body(inline)
+    assert tuple(exp.value.n for exp in xx) == (100, 101)
