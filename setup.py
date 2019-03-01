@@ -7,14 +7,17 @@ except ImportError:
 
 import micropy
 
-
 setup(
     name='micropy',
     version=micropy.__version__,
     description="Some Python nicieties",
-    package=('micropy',),
+    package=('micropy', ),
     author='Jacob Oscarson',
     author_email='jacob@414soft.com',
+    install_requires=list({
+        "funcy>=1.10.2",
+        'pysistence>=0.4.1',
+    }),
     licence='MIT',
     classifiers=[
         'Programming Language :: Python',
