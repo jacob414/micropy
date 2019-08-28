@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# yapf
 
 try:
     from setuptools import setup
@@ -7,14 +8,20 @@ except ImportError:
 
 import micropy
 
+__version__ = '0.5.0'
+install_requires = {
+    "funcy>=1.10.2",
+    'pysistence>=0.4.1',
+}
+
 setup(
     name='micropy',
     version=micropy.__version__,
     description="Some Python nicieties",
-    package=('micropy',),
+    package=('micropy', ),
     author='Jacob Oscarson',
     author_email='jacob@414soft.com',
-    install_requires=list(micropy.__requires__),
+    install_requires=install_requires,
     licence='MIT',
     classifiers=[
         'Programming Language :: Python',

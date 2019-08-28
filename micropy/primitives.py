@@ -78,17 +78,6 @@ def raises(ExcType):
     return raiser
 
 
-# addr_ = lambda y: lambda: lambda x: x + y
-
-# class ops:
-
-#     addr = staticmethod(addr_)
-
-#     incr = staticmethod(lambda: ops.addr(1))
-
-#     inc = staticmethod(lambda x: addr_(1)(x))
-
-
 class XE(Expando):
     __getitem__ = lambda self, attr: getattr(self, attr)
     iteritems = lambda self: self.to_dict().iteritems()
