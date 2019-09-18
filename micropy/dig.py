@@ -16,9 +16,10 @@ class Attr:
     PrimType = lang.Undefined
     __bind__ = []
 
-    @classmethod
-    def create(cls, *params):
-
+    @staticmethod
+    def split(params):
+        # type: (*Any) -> Tuple[str, Any]
+        "Does split"
         name, value = '<anon>', None
         arity = len(params)
         if arity == 1:
@@ -27,6 +28,12 @@ class Attr:
             name, value = params
         else:
             raise ValueError('Incorrect arity')
+        return name, value
+
+    @classmethod
+    def create(cls, *params):
+
+        name, value = Attr.split(params)
 
         obj = cls.__new__(cls, value)
         obj.name = name
@@ -68,7 +75,8 @@ class Attr:
         return self.eq(self, other)
 
     @classmethod
-    def infer(cls, name, value):
+    def infer(cls, *params):
+        name, value = Attr.split(params)
         PrimType = Attr.infer_types[type(value)]
         return PrimType.create(name, value)
 
