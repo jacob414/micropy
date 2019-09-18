@@ -8,9 +8,6 @@ import patterns
 import types
 import copy
 import typing
-from redbaron import RedBaron
-import astor
-import codegen
 import numbers
 import funcy
 from pysistence import Expando
@@ -70,7 +67,6 @@ def isprim_type(type_):
 def tolerant_or_original(Exc, fn):
     # type: (Exception, Callable) -> None
     """Returns a function that will allow the Exception(s) in `Exc` to occur."""
-
     def invoke(obj):
         # type: (obj) -> None
         "Does invoke"
@@ -82,8 +78,8 @@ def tolerant_or_original(Exc, fn):
     return invoke
 
 
-coerce_or_same = lambda T: tolerant_or_original((TypeError, ValueError,
-                                                 AttributeError), T)
+coerce_or_same = lambda T: tolerant_or_original(
+    (TypeError, ValueError, AttributeError), T)
 "Special case of `tolerant_or_original()` for type coercion."
 
 

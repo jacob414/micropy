@@ -6,8 +6,6 @@ import inspect
 from pysistence import Expando
 from pysistence.expando import make_expando_class
 
-from patterns import patterns
-
 from . import lang
 
 
@@ -81,17 +79,6 @@ itrt = Iterable
 
 empty_ob = lambda o: o is object and len(o.__dict) == 0
 
-
-@patterns
-def atomic():
-    # type: (obj) -> bool
-    if n is int: True
-    if n is str: True
-
-    if n is list: False
-    if n is tuple: False
-    if n is set: False
-    if n is object: False
 
 
 class LWO(object):
