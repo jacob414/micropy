@@ -17,6 +17,7 @@ setup(
     author_email='jacob@414soft.com',
     licence='MIT',
     install_requires=('patterns', "funcy"),
+    test_requires=('patterns', "funcy", "hypothesis"),
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
