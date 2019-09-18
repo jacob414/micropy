@@ -116,7 +116,10 @@ class Attr:
         return hashlib.sha1('{}:{}'.format(self.name, value)).hexdigest()
 
     def __eq__(self, other):
-        return other.name == self.name and other.raw_value == self.raw_value
+        if hasattr(other, 'name'):
+            return other.name == self.name and other.raw_value == self.raw_value
+        else:
+            return other == self.raw_value
 
 
 for name, PrimType in (('IntAttr', int),
@@ -207,7 +210,7 @@ def dig(obj, path):
     "Recursive query for attributes from `obj`"
     val = xget(obj, path[0])
     if lang.isprimitive(val):
-        return val
+        return Attr.infer(val)
     elif Attr.isa(val):
         dig(val, path[1:])
     else:
