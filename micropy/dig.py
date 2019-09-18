@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# -*- yapf -*-
+# yapf
 
 from . import lang
 import funcy
@@ -17,7 +17,16 @@ class Attr:
     __bind__ = []
 
     @classmethod
-    def create(cls, name, value):
+    def create(cls, *params):
+
+        name, value = '<anon>', None
+        arity = len(params)
+        if arity == 1:
+            value, = params
+        elif arity == 2:
+            name, value = params
+        else:
+            raise ValueError('Incorrect arity')
 
         obj = cls.__new__(cls, value)
         obj.name = name
