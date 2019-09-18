@@ -123,10 +123,10 @@ class Attr:
 
 
 for name, PrimType in (('IntAttr', int),
-                             ('FloatAttr', float),
-                             ('TupleAttr', tuple),
-                             ('ListAttr', list),
-                             ('StrAttr', str)):  # yapf: disable
+                       ('FloatAttr', float),
+                       ('TupleAttr', tuple),
+                       ('ListAttr', list),
+                       ('StrAttr', str)):  # yapf: disable
     AttrClass = lang.mkclass(name, (Attr, PrimType))
     AttrClass.PrimType = PrimType
 
