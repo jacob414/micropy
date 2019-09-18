@@ -20,10 +20,11 @@ class Attr:
     def split(params):
         # type: (*Any) -> Tuple[str, Any]
         "Does split"
-        name, value = '<anon>', None
+        name, value = '<anon:??>', None
         arity = len(params)
         if arity == 1:
             value, = params
+            name = '<anon:{}>'.format(lang.typename(value))
         elif arity == 2:
             name, value = params
         else:

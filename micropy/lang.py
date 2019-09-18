@@ -27,6 +27,15 @@ isint = funcy.isa(int)
 isdict = funcy.isa(dict)
 
 
+def typename(x):
+    # type: (Any) -> str
+    """Safely get a type name from parameter `x`. If `x == None` returns
+    `'None'`
+
+    """
+    return x is None and 'None' or x.__class__.__name__
+
+
 class XE(Expando):
     __getitem__ = lambda self, attr: getattr(self, attr)
     iteritems = lambda self: self.to_dict().iteritems()
