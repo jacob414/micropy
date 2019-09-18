@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# -*- yapf -*-
+# yapf
 
 import ast
 import patterns
 import funcy
-import patterns
 import types
 import copy
 import typing

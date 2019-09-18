@@ -11,7 +11,8 @@ import micropy
 
 install = (
     "funcy>=1.10.2",
-    'pysistence>=0.4.1',
+    "pysistence>=0.4.1",
+    "patterns>=0.3"
 )  # yapf: disable
 
 develop = (
@@ -30,6 +31,10 @@ setup(
     author='Jacob Oscarson',
     author_email='jacob@414soft.com',
     install_requires=install,
+    extras_require={
+        'test': install + develop,
+    },
+    test_require=install + develop,
     licence='MIT',
     classifiers=[
         'Programming Language :: Python',
