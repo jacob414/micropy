@@ -84,8 +84,7 @@ def test_xget_glob_attrs_some():
 def test_dig_iter():
     # type: () -> None
     "Should "
-    res = dig.dig((1, 2, 3, (41, 42, 43)), '3.0')
-    assert res == 41
+    assert dig.dig((1, 2, 3, (41, 42, 43)), (3, 0)) == 41
 
 
 def test_dig_dict_iter():
@@ -106,14 +105,11 @@ def test_dig_object():
     assert dig.dig(E(foo='bar', bar=E(jox='jox')), 'bar.jox') == 'jox'
 
 
-# @pytest.mark.skip
 def test_dig_complex():
     # type: () -> None
     "Should "
     ob = E(foo=1, bar=2, fx=(1, 2, 3))
-    path = 'f*.1.0'
-    res = dig.dig(ob, path)
-    assert res == 1
+    assert dig.dig(ob, 'f*.1.0') == 1
 
 
 @pytest.fixture

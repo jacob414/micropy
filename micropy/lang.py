@@ -20,6 +20,7 @@ from . import survive_2020 as py2
 basestring = py2.basestring
 singledispatch = py2.singledispatch
 
+
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
 textual = funcy.isa(basestring)
@@ -73,6 +74,7 @@ def isprim_type(type_):
     return True if type_ in PRIMTYPES else False
 
 
+
 def tolerant_or_original(Exc, fn):
     # type: (Exception, Callable) -> None
     """Returns a function that will allow the Exception(s) in `Exc` to occur."""
@@ -90,6 +92,7 @@ def tolerant_or_original(Exc, fn):
 coerce_or_same = lambda T: tolerant_or_original(
     (TypeError, ValueError, AttributeError), T)
 "Special case of `tolerant_or_original()` for type coercion."
+
 
 maybe_int = coerce_or_same(int)
 
