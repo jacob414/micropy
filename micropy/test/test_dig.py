@@ -84,7 +84,7 @@ def test_xget_glob_attrs_some():
 def test_dig_iter():
     # type: () -> None
     "Should "
-    assert dig.dig((1, 2, 3, (41, 42, 43)), (3, 0)) == 41
+    assert dig.dig((1, 2, 3, (41, 42, 43)), "3.0") == 41
 
 
 def test_dig_dict_iter():

@@ -149,7 +149,7 @@ def xget(obj, idx):
 
     try:
         try:
-            return obj[idx]
+            return obj[lang.maybe_int(idx)]
         except KeyError:
             return attempt_many()
         except IndexError:
