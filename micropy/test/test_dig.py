@@ -56,7 +56,7 @@ def test_xget_glob_keys_all():
     xx = dig.Attr.infer('foo', val)
     resultset = dig.xget(obj, '*')
     textual = str(resultset)
-    assert textual == '/foo=1:int, bar=2:int/'
+    assert textual == '[foo=1:int, bar=2:int]'
 
 
 def test_xget_glob_keys_some():
@@ -66,52 +66,50 @@ def test_xget_glob_keys_some():
         'foo': 1,
         'bar': 2,
         'fx': 2
-    }, 'f*')) == '/foo=1:int, fx=2:int/'
+    }, 'f*')) == '[foo=1:int, fx=2:int]'
 
 
 def test_xget_glob_attrs_all():
     # type: () -> None
     "Should get keys of dict"
-    assert str(dig.xget(E(foo=1, bar=2), '*')) == '/bar=2:int, foo=1:int/'
+    assert str(dig.xget(E(foo=1, bar=2), '*')) == '[bar=2:int, foo=1:int]'
 
 
 def test_xget_glob_attrs_some():
     # type: () -> None
     "Should get keys of object"
-    assert str(dig.xget(E(foo=1, bar=2), 'f*')) == '/foo=1:int/'
+    assert str(dig.xget(E(foo=1, bar=2), 'f*')) == '[foo=1:int]'
 
 
 def test_dig_iter():
     # type: () -> None
     "Should "
-    assert dig.dig((1, 2, 3, (41, 42, 43)), (3, 0)) == 41
+    assert dig.dig((1, 2, 3, (41, 42, 43)), "3.0") == 41
 
 
 def test_dig_dict_iter():
     # type: () -> None
     "Should "
-    assert dig.dig({'foo': (1, 2)}, ('foo', 0)) == 1
+    assert dig.dig({'foo': (1, 2)}, 'foo.0') == 1
 
 
 def test_dig_dict_nested():
     # type: () -> None
     "Should "
-    assert dig.dig({'foo': {'bar': 'baz'}}, ('foo', 'bar')) == 'baz'
+    assert dig.dig({'foo': {'bar': 'baz'}}, 'foo.bar') == 'baz'
 
 
 def test_dig_object():
     # type: () -> None
     "Should "
-    assert dig.dig(E(foo='bar', bar=E(jox='jox')), ('bar', 'jox')) == 'jox'
+    assert dig.dig(E(foo='bar', bar=E(jox='jox')), 'bar.jox') == 'jox'
 
 
 def test_dig_complex():
     # type: () -> None
     "Should "
     ob = E(foo=1, bar=2, fx=(1, 2, 3))
-    path = ('f*', 1, 0)
-    res = dig.dig(ob, path)
-    assert res == 1
+    assert dig.dig(ob, 'f*.1.0') == 1
 
 
 @pytest.fixture

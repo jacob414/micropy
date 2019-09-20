@@ -134,34 +134,6 @@ for name, PrimType in (('IntAttr', int),
     Attr.infer_types[PrimType] = AttrClass
 
 
-class FoundAttrs(object):
-    def __init__(self, initial):
-        # type: (FoundAttrs, *Any) -> None
-        self.found = pysistence.make_list(initial)
-
-    def __getitem__(self, idx):
-        # type: (self, int) -> Any
-        "Subscript result"
-        return tuple(self.found)[0][idx]
-
-    def cons(self, next_item):
-        # type: (self, el) -> None
-        "Does cons"
-        self.values = self.values.cons(next_item)
-        return self
-
-    def __iter__(self):
-        return iter(self.found)
-
-    def __len__(self):
-        # type: (self) -> None
-        "Does __len__"
-        return len(self.found)
-
-    def __repr__(self):
-        return "/{}/".format(', '.join([str(el) for el in self.found.first]))
-
-
 def xget(obj, idx):
     # type: (Any, Any) -> Optional[AttrResults, Attr]
     "Does foo"
@@ -173,13 +145,11 @@ def xget(obj, idx):
         "Does attempt_many"
         vars_ = lang.pubvars(obj)
         attrs = fnmatch.filter(vars_, idx)
-        attrified = [Attr.infer(attr, xget(obj, attr)) for attr in attrs]
-        found = FoundAttrs(attrified)
-        return found
+        return [Attr.infer(attr, xget(obj, attr)) for attr in attrs]
 
     try:
         try:
-            return obj[idx]
+            return obj[lang.maybe_int(idx)]
         except KeyError:
             return attempt_many()
         except IndexError:
@@ -205,27 +175,23 @@ class AttrQuery(tuple):
         return AttrQuery(tuple(text.split('.')))
 
 
+def idig(obj, path):
+    # type: (Any, Tuple[Any]) -> Generator[Attr, None, None]
+    "Recursive query for attributes from `obj` by a sequence spec."
+    try:
+        key = path.pop(0)
+        point = xget(obj, key)
+        if path:
+            return idig(point, path)
+        else:
+            return point
+    except (IndexError, StopIteration):
+        pass
+    return
+
+
 def dig(obj, path):
-    # type: (Any, Tuple[Any]) -> FoundAttrs
-    "Recursive query for attributes from `obj`"
-    val = xget(obj, path[0])
-    if lang.isprimitive(val):
-        return Attr.infer(val)
-    elif Attr.isa(val):
-        dig(val, path[1:])
-    else:
-        return dig(val, path[1:])
+    # type: (Any, str) -> FoundAttrs
+    "Recursive query for attributes from `obj` by string spec."
 
-
-if __name__ == '__main__':
-
-    @IntAttr.method
-    def foo(self, bar):
-        # type: (self, bar) -> None
-        "Does foo"
-        return self + bar
-
-    attr = IntAttr.infer('foo', 1)
-
-    print(attr)
-    print(attr.foo(2))
+    return idig(obj, path.split('.'))
