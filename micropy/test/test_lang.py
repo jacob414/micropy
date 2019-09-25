@@ -9,39 +9,6 @@ from hypothesis import given, example, strategies as st
 import _ast
 
 
-@pytest.mark.skip
-@given(st.text())
-@example('if')
-@example('for')
-def test_node_sane(name):
-    # type: () -> None
-    "Should "
-    try:
-        node = lang.node(name)
-        assert compile(node, 'name', 'single')
-    except KeyError:
-        pass
-
-
-def inline(x):
-    100
-    101
-
-
-def test_body():
-    # type: () -> None
-    "Should poc"
-    xx = lang.body(inline)
-    assert tuple(exp.value.n for exp in xx) == (100, 101)
-
-
-@pytest.mark.skip
-def test_lispify():
-    # type: () -> None
-    "Does test_lispify"
-    lang.nodemap[_ast.Str](None)
-
-
 @pytest.fixture
 def Dispatcher():
     class Dispatching(object):

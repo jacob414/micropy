@@ -43,22 +43,6 @@ class PipingExperiment(object):
 P = PipingExperiment
 
 
-def f(str_):
-    """
-    Poor man's f-strings (e.g. if you are stuck on Python 2).
-
-    Caller `locals()` expansion technique, thanks Gareth Rees,
-    http://stackoverflow.com/a/6618825/288672
-    """
-
-    frame = inspect.currentframe()
-    try:
-        return str_.format(**frame.f_back.f_locals)
-
-    finally:
-        del frame
-
-
 def raises(ExcType):
     # type: (Exception) -> Callable
     """Returns a function that will raise an exception of specified type
@@ -94,23 +78,6 @@ class LWO(object):
 
         setattr(self, fn.__name__, invoke)
         return invoke
-
-
-def explore(obj, name=None, level=0):
-    # type: (obj) -> None
-    "Does explore"
-    rendered = ''
-
-    if name is None:
-        name = '{}<{}>'.format(obj.__class__.__name__, str(id(obj)))
-    if level is 0:
-        rendered += '{}\n'.format(name)
-        level += 1
-    indent = 2 * level * ' '
-    for attr, value in obj.__dict__.items():
-        rendered += indent + "{attr} = {value!r}\n".format(**locals())
-
-    return rendered
 
 
 def func_file(func):
