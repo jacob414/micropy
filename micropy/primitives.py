@@ -1,7 +1,11 @@
 # yapf
 
-from itertools import islice
 import inspect
+import re
+import inspect
+import ast
+import sys
+from itertools import islice
 
 from collections.abc import Iterable
 
@@ -106,30 +110,7 @@ def explore(obj, name=None, level=0):
     for attr, value in obj.__dict__.items():
         rendered += indent + "{attr} = {value!r}\n".format(**locals())
 
-
-#        if atomic(value):
-#            rendered += indent + "{attr} = {value!r}\n".format(**locals())ode
-#        else:
-#            rendered += explore(value, level=level + 1)
-
     return rendered
-
-
-def climb(obj, path):
-    # type: (Any, Optional[*int, Iterable, Generator]) -> Any
-    "Does climb"
-    # climb([1,2,[3,4],5], 2) -> (3,4)
-    # climb([1,2,[3,4],5], [2, 0]) -> 3
-    # climb([1,2,[3,4],5], [2, 1]) -> 4
-    # climb([1,2,[3,4],5], [2, 2]) -> raise Missing
-
-    raise NotImplementedError()
-
-
-import re
-import inspect
-import ast
-import sys
 
 
 def func_file(func):
@@ -144,22 +125,6 @@ def nanoast(obj):
     # if spaces:
     #     source = re.sub(r'(^|\n)' + spaces, '\n', source)
     return ast.parse(source, func_file(obj), 'single')
-
-
-def f1(x):
-    # type: (x) -> None
-    "Does f1"
-    return x + 1
-
-
-f1_ = nanoast(f1)
-
-
-class Cls:
-    pass
-
-
-Cls_ = nanoast(Cls)
 
 
 class XE(Expando):

@@ -20,7 +20,6 @@ from . import survive_2020 as py2
 basestring = py2.basestring
 singledispatch = py2.singledispatch
 
-
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
 textual = funcy.isa(basestring)
@@ -74,7 +73,6 @@ def isprim_type(type_):
     return True if type_ in PRIMTYPES else False
 
 
-
 def tolerant_or_original(Exc, fn):
     # type: (Exception, Callable) -> None
     """Returns a function that will allow the Exception(s) in `Exc` to occur."""
@@ -93,7 +91,6 @@ coerce_or_same = lambda T: tolerant_or_original(
     (TypeError, ValueError, AttributeError), T)
 "Special case of `tolerant_or_original()` for type coercion."
 
-
 maybe_int = coerce_or_same(int)
 
 
@@ -111,116 +108,6 @@ def methdispatch(func):
     wrapper.register = dispatcher.register
     update_wrapper(wrapper, func)
     return wrapper
-
-
-class Sym(object):
-    def __init__(self, name):
-        self.name = name
-        self.node = RedBaron(name)
-
-
-def func_to_rb(func):
-    # type: (func) -> None
-    "Does func_to_rb"
-    return RedBaron(codegen.dump(astor.code_to_ast(func)))
-
-
-def rep_Str(str_):
-    # type: (str_) -> None
-    "Does rep_Str"
-    return (Sym('str'), True, lambda n: n.s)
-
-
-def paramtype(param):
-    # type: (param) -> None
-    "Does paramtype"
-    paramtype.raises = (TypeError, )
-    if isinstance(param, basestring):
-        print(f'Any param with name {param}')
-        name = param
-        return ast.arg(name, typing.Any)
-    elif isinstance(param, tuple):
-        name, annotation = param
-        return ast.arg(name, annotation)
-    else:
-        raise TypeError(
-            "Can't specify parameter based on {param}".format(**locals()))
-
-
-from ast import *
-
-
-def argsbuild(*params, **options):
-    # type: (*params, **more) -> None
-    "Does argsbuild"
-    return arguments(args=funcy.walk(paramtype, params),
-                     vararg=arg(arg='d', annotation=None),
-                     kwonlyargs=[
-                         arg(arg='e', annotation=None),
-                         arg(arg='f', annotation=None),
-                     ],
-                     kw_defaults=[
-                         None,
-                         Num(n=3),
-                     ],
-                     kwarg=arg(arg='g', annotation=None),
-                     defaults=[
-                         Num(n=1),
-                         Num(n=2),
-                     ])
-
-
-def body(obj):
-    return funcy.walk(lambda x: x.body, patterns.get_ast(obj).body)[0]
-
-
-class expr_:
-    pass
-
-
-class body_:
-    pass
-
-
-def if_(x):
-    # type: () -> None
-    "Does if_"
-    if expr_: body_
-
-
-def for_(x):
-    for x in expr_:
-        body_
-
-
-def node(type_):
-    # type: (str) ->
-    "Does node"
-    node.raises = (TypeError, ValueError)
-    if not type_.endswith('_'):
-        type_ = type_ + '_'
-    return body(globals()[type_])
-
-
-def fntmpl(*args, **kwargs):
-    pass
-
-
-def eval_(nodes, src):
-    # type: (Sequence[ast.AST]) -> Callable
-    "Does eval"
-    if type(src) is types.FunctionType:
-        top = patterns.get_ast(fntmpl)
-        top.body[0].args = patterns.get_ast(src).body[0].args
-        top.body[0].body = nodes
-        local = {}
-        newcode = compile(top, 'name', 'single')
-        eval(newcode, globals(), local)
-        fn, = local.values()
-        return fn
-
-    recompiled = ast.copy_location(src, ast.Interactive(nodes))
-    return recompiled
 
 
 class Undefined:
@@ -307,69 +194,6 @@ def mkclass(name, bases=(), **clsattrs):
     Gen = type(name, (Base, ) + bases, clsattrs)
     return Gen
 
-
-if __name__ == '__main__':
-    from pprint import pprint
-
-    def foo(a, b):
-        # type: () -> None
-        "Does foo"
-        return (a + 1, b + 1)
-
-    typemap = {
-        ast.Str: True,
-        ast.Return: False,
-        ast.Expr: False,
-        ast.BinOp: False
-    }
-
-    nvalue = lambda n: (n.value, )
-    childmap = {
-        ast.Str: lambda n: [],
-        ast.Return: nvalue,
-        ast.Expr: nvalue,
-        ast.BinOp: lambda n: (n.left, n.right),
-        ast.Tuple: lambda n: n.elts
-    }
-    children = lambda n: childmap[type(n)](n)
-
-    def procn(node):
-        # type: (node) -> None
-        "Does procn"
-        atomic = 'atomic' if len(children(node)) == 1 else 'not atomic'
-        print(f'Node {node}, {atomic}')
-        return node
-
-    nodes = funcy.walk(procn, body(foo))
-    print(eval_(nodes, foo)(2, 2))
-
-    Foo = mkclass('Foo')
-
-    @Foo.classmethod
-    def cfoo(cls):
-        # type: (cls) -> None
-        "Does in_foo"
-        print(cls, 'classmethod')
-
-    @Foo.staticmethod
-    def sfoo():
-        # type: () -> None
-        "Does sfoo"
-        print(Foo, 'staticmethod')
-
-    @Foo.method
-    def meth(self, x):
-        # type: (self) -> None
-        "Does meth"
-        return self.bar + x
-
-    Foo.cfoo()
-    Foo.sfoo()
-
-    foo = Foo()
-    foo.bar = 10
-
-    print(foo.meth(10))
 
 # pprint(primitives.explore(argsbuild(('foo', 'bar'), hello='world')))
 
