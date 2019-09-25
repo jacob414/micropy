@@ -28,4 +28,6 @@ def snv(value, width=8):
 
 
 def visual_bits_print(value, width=8):
-    print(snv(value, width))
+    out = snv(value, width)
+    print(out)
+    return out
