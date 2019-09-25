@@ -152,8 +152,6 @@ def xget(obj, idx):
             return obj[lang.maybe_int(idx)]
         except KeyError:
             return attempt_many()
-        except IndexError:
-            pass  # continue to next
     except TypeError:
         try:
             return getattr(obj, idx)

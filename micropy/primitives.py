@@ -3,6 +3,8 @@
 from itertools import islice
 import inspect
 
+from collections.abc import Iterable
+
 from pysistence import Expando
 from pysistence.expando import make_expando_class
 
@@ -24,7 +26,6 @@ class PipingExperiment(object):
     I'm going with this but curious.
 
     """
-
     def __init__(self, seed):
         # type: (Any) -> PipingExperiment
         self.result = seed
@@ -61,24 +62,16 @@ def raises(ExcType):
     parameters.
 
     """
-
     def raiser(*args, **kwargs):
         raise ExcType(*args, **kwargs)
 
     return raiser
 
 
-try:
-    from collections.abc import Iterable
-except ImportError:
-    # Have patience dear frends, this too will pass.
-    from collections import Iterable
-
 IT = type(int)
 itrt = Iterable
 
 empty_ob = lambda o: o is object and len(o.__dict) == 0
-
 
 
 class LWO(object):
