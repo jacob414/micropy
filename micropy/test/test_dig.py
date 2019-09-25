@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # -*- yapf -*-
 
-from dataclasses import dataclass
-
 import pytest
 
 from altered import E
