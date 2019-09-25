@@ -1,29 +1,25 @@
-from itertools import islice
+# yapf
+
 import inspect
+import re
+import inspect
+import ast
+import sys
+from itertools import islice
+
+from collections.abc import Iterable
 
 from pysistence import Expando
+from pysistence.expando import make_expando_class
 
-
-def head(gen):
-    # type: (Generator) -> Generator[Any, Any, Any]
-    "Convenience function to pick the head element from a generator object ('car')"
-    try:
-        return next(gen)
-
-    except StopIteration:
-        return None
-
-
-def tail(gen):
-    # type: (Generator) -> Generator[Any, Any, Any]
-    return islice(gen, 1, None)
+from . import lang
 
 
 def pipe(invalue, *chain):
     # type: (Any, List[Callable]) -> Any
-    val = head(iter(chain))(invalue)
+    val = chain[0](invalue)
 
-    for step in tail(chain):
+    for step in chain[1:]:
         val = step(val)
 
     return val
@@ -34,7 +30,6 @@ class PipingExperiment(object):
     I'm going with this but curious.
 
     """
-
     def __init__(self, seed):
         # type: (Any) -> PipingExperiment
         self.result = seed
@@ -48,22 +43,6 @@ class PipingExperiment(object):
 P = PipingExperiment
 
 
-def f(str_):
-    """
-    Poor man's f-strings (e.g. if you are stuck on Python 2).
-
-    Caller `locals()` expansion technique, thanks Gareth Rees,
-    http://stackoverflow.com/a/6618825/288672
-    """
-
-    frame = inspect.currentframe()
-    try:
-        return str_.format(**frame.f_back.f_locals)
-
-    finally:
-        del frame
-
-
 def raises(ExcType):
     # type: (Exception) -> Callable
     """Returns a function that will raise an exception of specified type
@@ -71,20 +50,58 @@ def raises(ExcType):
     parameters.
 
     """
-
     def raiser(*args, **kwargs):
         raise ExcType(*args, **kwargs)
 
     return raiser
 
 
+IT = type(int)
+itrt = Iterable
+
+empty_ob = lambda o: o is object and len(o.__dict) == 0
+
+
+class LWO(object):
+    def __init__(self, *args, **kw):
+        self.__dict__.update(**kw)
+
+    def has(self, fn):
+        # typse: (fn) -> None
+        "Does meth"
+
+        def invoke(*args, **kw):
+            # type: () -> None
+            "Does wrap"
+            res = fn(*args, **kw)
+            return res
+
+        setattr(self, fn.__name__, invoke)
+        return invoke
+
+
+def func_file(func):
+    return getattr(sys.modules[func.__module__], '__file__', '<nofile>')
+
+
+def nanoast(obj):
+    # type: (obj) -> None
+    "Does nanoast"
+    source = inspect.getsource(obj)
+    # source = re.sub(r'(^|\n)' + spaces, '\n', source)
+    # if spaces:
+    #     source = re.sub(r'(^|\n)' + spaces, '\n', source)
+    return ast.parse(source, func_file(obj), 'single')
+
+
 class XE(Expando):
+    """Thin convenience wrapper around Pysistence's Expando class. Makes
+    the Expando appear as both `dict` and `object`.
+
+    """
+
     __getitem__ = lambda self, attr: getattr(self, attr)
     iteritems = lambda self: self.to_dict().iteritems()
-
-    def __init__(self, mapping):
-        # type: (XE, dict) -> None
-        super().__init__(**mapping)
 
     def get(self, name, default=None):
         return self.to_dict().get(name, default)

@@ -6,23 +6,33 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import sys
 import micropy
 
-__version__ = '0.5.0'
-install_requires = {
+install = (
     "funcy>=1.10.2",
-    'pysistence>=0.4.1',
-}
+    "pysistence>=0.4.1",
+    "patterns>=0.3",
+)  # yapf: disable
+
+develop = (
+    "pytest>=5.0.1",
+    "hypothesis>=4.24.3",
+    "altered_states>=1.0.9",
+)  # yapf: disable
 
 setup(
     name='micropy',
     version=micropy.__version__,
     description="Some Python nicieties",
-    package=('micropy', ),
+    packages=('micropy', ),
     author='Jacob Oscarson',
     author_email='jacob@414soft.com',
-    install_requires=install_requires,
-    licence='MIT',
+    install_requires=install,
+    extras_require={
+        'test': install + develop,
+    },
+    license='MIT',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
