@@ -2,6 +2,7 @@
 # yapf
 
 import ast
+import inspect
 import patterns
 import funcy
 import types
@@ -9,20 +10,17 @@ import copy
 import typing
 import numbers
 import funcy
+from functools import singledispatch
 from pysistence import Expando
 
 import itertools
 from functools import partial, wraps, update_wrapper
 
 from micropy import primitives
-from . import survive_2020 as py2
-
-basestring = py2.basestring
-singledispatch = py2.singledispatch
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
-textual = funcy.isa(basestring)
+textual = funcy.isa(str)
 numeric = funcy.isa(numbers.Number)
 isint = funcy.isa(int)
 isdict = funcy.isa(dict)
