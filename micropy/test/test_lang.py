@@ -43,7 +43,7 @@ def Alt():
 
 def test_mkclass_classmethod(Alt):
     # type: () -> None
-    "Should "
+    "Should be able to declare dynamic class methods"
 
     @Alt.classmethod
     def cmeth(cls, x, y):
