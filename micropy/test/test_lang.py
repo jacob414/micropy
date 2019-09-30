@@ -55,6 +55,9 @@ def test_mkclass_classmethod(Alt):
     assert sum == 2, \
         "Expected 2, got {}".format(sum)
 
+
+def test_mkclass_bound_method(Alt: Alt) -> None:
+    "Should be able to add methods to individual objects."
     alt1, alt2 = Alt(), Alt()
 
     @alt1.method
