@@ -55,6 +55,18 @@ def test_mkclass_classmethod(Alt):
     assert sum == 2, \
         "Expected 2, got {}".format(sum)
 
+    alt1, alt2 = Alt(), Alt()
+
+    @alt1.method
+    def amethod(self, foo):
+        # type: (foo) -> None
+        "Does _"
+        self.bar = foo + 1
+
+    alt1.amethod(1)
+    assert alt1.bar == 2
+    assert not hasattr(alt2, 'amethod')
+
 
 @fixture.params("type_, expected",
     (int, True),

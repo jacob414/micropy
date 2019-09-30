@@ -150,7 +150,7 @@ class Base(object):
             setattr(Base, name, types.MethodType(fn, instance))
 
     @__staticmethod__
-    def __wrapper(fn, name=None):
+    def __wrapper(fn, Cls=None, name=None):
         # type: () -> None
         "Does __wrapper"
         if name is None:
@@ -158,22 +158,21 @@ class Base(object):
 
         @wraps(fn)
         def do_call(*params, **opts):
-            return fn(*params, **opts)
+            if Cls is None:
+                return fn(*params, **opts)
+            else:
+                return fn(*((Cls, ) + params), **opts)
 
-        setattr(Cls, name, do_call)
+        if Cls is None:
+            setattr(Base, name, do_call)
+        else:
+            setattr(Cls, name, do_call)
 
         return do_call
 
-    @__staticmethod__
-    def classmethod(fn):
-        name = fn.__name__
-
-        @wraps(fn)
-        def do_call(*params, **opts):
-            return fn(Base, *params, **opts)
-
-        setattr(Base, name, do_call)
-        return do_call
+    @__classmethod__
+    def classmethod(cls, fn):
+        return Base.__wrapper(fn, Cls=cls)
 
     @__staticmethod__
     def staticmethod(fn):
@@ -185,6 +184,10 @@ class Base(object):
         "Does method"
         Base.__bind__.append((fn.__name__, fn))
         return fn
+
+    def method(self, fn):
+        self.__bind__.append((fn.__name__, fn))
+        bind_methods(self, self)
 
 
 def mkclass(name, bases=(), **clsattrs):
