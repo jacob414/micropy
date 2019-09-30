@@ -1,0 +1,30 @@
+* micropy
+
+My little lib of Python goodies
+
+Micropy is auto-formatted using [[https://github.com/google/yapf][yapf]].
+
+** Nice things
+
+CSS selector like deep value grabbing from almost any object:
+
+#+BEGIN_SRC python
+>>> from micropy import dig
+>>> dig.xget((1, 2, 3), 1)
+2
+>>> dig.xget({'foo': 'bar'}, 'foo')
+'bar'
+>>> dig.dig({'foo': 1, 'bar': [1,2,3]}, 'bar.1')
+2
+>>> dig.dig({'foo': 1, 'bar': [1,{'baz':'jox'},3]}, 'bar.1.baz')
+'jox'
+#+END_SRC
+
+Programmatic creation of arbitrary named classes in module definition:
+
+#+BEGIN_SRC python
+>>> from micropy import lang
+>>> locals()['Foo'] = lang.mkclass('Foo')
+>>> Foo
+<class 'micropy.lang.Foo'>
+#+END_SRC
