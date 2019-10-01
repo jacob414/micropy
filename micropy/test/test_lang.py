@@ -43,7 +43,7 @@ def Alt():
 
 def test_mkclass_classmethod(Alt):
     # type: () -> None
-    "Should "
+    "Should be able to declare dynamic class methods"
 
     @Alt.classmethod
     def cmeth(cls, x, y):
@@ -54,6 +54,21 @@ def test_mkclass_classmethod(Alt):
     sum = Alt.cmeth(1, 1)
     assert sum == 2, \
         "Expected 2, got {}".format(sum)
+
+
+def test_mkclass_bound_method(Alt: Alt) -> None:
+    "Should be able to add methods to individual objects."
+    alt1, alt2 = Alt(), Alt()
+
+    @alt1.method
+    def amethod(self, foo):
+        # type: (foo) -> None
+        "Does _"
+        self.bar = foo + 1
+
+    alt1.amethod(1)
+    assert alt1.bar == 2
+    assert not hasattr(alt2, 'amethod')
 
 
 @fixture.params("type_, expected",

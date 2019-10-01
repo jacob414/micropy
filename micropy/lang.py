@@ -2,6 +2,7 @@
 # yapf
 
 import ast
+import inspect
 import patterns
 import funcy
 import types
@@ -9,20 +10,17 @@ import copy
 import typing
 import numbers
 import funcy
+from functools import singledispatch
 from pysistence import Expando
 
 import itertools
 from functools import partial, wraps, update_wrapper
 
 from micropy import primitives
-from . import survive_2020 as py2
-
-basestring = py2.basestring
-singledispatch = py2.singledispatch
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
-textual = funcy.isa(basestring)
+textual = funcy.isa(str)
 numeric = funcy.isa(numbers.Number)
 isint = funcy.isa(int)
 isdict = funcy.isa(dict)
@@ -146,11 +144,9 @@ class Base(object):
 
     def __init__(self, *params, **opts):
         bind_methods(self.__class__, self)
-        for name, fn in Base.__bind__:
-            setattr(Base, name, types.MethodType(fn, instance))
 
     @__staticmethod__
-    def __wrapper(fn, name=None):
+    def __wrapper(fn, Cls=None, name=None):
         # type: () -> None
         "Does __wrapper"
         if name is None:
@@ -158,22 +154,21 @@ class Base(object):
 
         @wraps(fn)
         def do_call(*params, **opts):
-            return fn(*params, **opts)
+            if Cls is None:
+                return fn(*params, **opts)
+            else:
+                return fn(*((Cls, ) + params), **opts)
 
-        setattr(Cls, name, do_call)
+        if Cls is None:
+            setattr(Base, name, do_call)
+        else:
+            setattr(Cls, name, do_call)
 
         return do_call
 
-    @__staticmethod__
-    def classmethod(fn):
-        name = fn.__name__
-
-        @wraps(fn)
-        def do_call(*params, **opts):
-            return fn(Base, *params, **opts)
-
-        setattr(Base, name, do_call)
-        return do_call
+    @__classmethod__
+    def classmethod(cls, fn):
+        return Base.__wrapper(fn, Cls=cls)
 
     @__staticmethod__
     def staticmethod(fn):
@@ -182,8 +177,24 @@ class Base(object):
     @__staticmethod__
     def method(fn):
         # type: (fn) -> None
-        "Does method"
-        Base.__bind__.append((fn.__name__, fn))
+        "Creates a method from the decorated function `fn`"
+        sig = inspect.signature(fn)
+        name = fn.__name__
+        params = dict(sig.parameters.items())
+        arity = len(params)
+
+        if arity > 0 and 'self' in params:
+            # is a method
+
+            def method_call_on_future_instance(*params, **opts):
+                return fn(*params, **opts)
+
+            Base.__bind__.append((fn.__name__, method_call_on_future_instance))
+            setattr(Base, name, method_call_on_future_instance)
+        elif arity == 0:
+            Base.__bind__.append((fn.__name__, fn))
+            setattr(Base, name, method_call_on_future_instance)
+
         return fn
 
 

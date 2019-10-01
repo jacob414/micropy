@@ -18,13 +18,42 @@ CSS selector like deep value grabbing from almost any object:
 2
 >>> dig.dig({'foo': 1, 'bar': [1,{'baz':'jox'},3]}, 'bar.1.baz')
 'jox'
+>>>
 #+END_SRC
 
-Programmatic creation of arbitrary named classes in module definition:
+Programmatic creation of arbitrary named classes in module definition,
+add methods using a decorator notation:
 
 #+BEGIN_SRC python
 >>> from micropy import lang
->>> locals()['Foo'] = lang.mkclass('Foo')
+>>> mystuff = (('Foo', 1), ('Bar', 2))
+>>> for name, num in mystuff: locals()[name] = lang.mkclass(name, **{'num': num})
 >>> Foo
 <class 'micropy.lang.Foo'>
+>>> Foo.num
+1
+>>> \
+... @Foo.classmethod
+... def myclassmethod(cls, x):
+...     return x + 1
+>>> Foo.myclassmethod(1)
+2
+>>>
+>>> \
+... @Foo.staticmethod
+... def mystaticmethod(x, y):
+...     return x + y
+>>> Foo.mystaticmethod(1, 2)
+3
+>>> \
+... @Foo.method
+... def mymethod(self, x):
+...     self.y = self.num + x
+...     return self.y
+>>> foo = Foo()
+>>> foo.mymethod(1)
+2
+>>> foo.y
+2
+>>>
 #+END_SRC
