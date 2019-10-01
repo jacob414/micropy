@@ -51,7 +51,6 @@ add methods using a decorator notation:
 ...     self.y = self.num + x
 ...     return self.y
 >>> foo = Foo()
->>> import pprint; pprint.pprint(foo.__dict__)
 >>> foo.mymethod(1)
 2
 >>> foo.y

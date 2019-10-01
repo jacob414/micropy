@@ -144,8 +144,6 @@ class Base(object):
 
     def __init__(self, *params, **opts):
         bind_methods(self.__class__, self)
-        for name, fn in Base.__bind__:
-            setattr(Base, name, types.MethodType(fn, instance))
 
     @__staticmethod__
     def __wrapper(fn, Cls=None, name=None):
@@ -179,13 +177,25 @@ class Base(object):
     @__staticmethod__
     def method(fn):
         # type: (fn) -> None
-        "Does method"
-        Base.__bind__.append((fn.__name__, fn))
-        return fn
+        "Creates a method from the decorated function `fn`"
+        sig = inspect.signature(fn)
+        name = fn.__name__
+        params = dict(sig.parameters.items())
+        arity = len(params)
 
-    def method(self, fn):
-        self.__bind__.append((fn.__name__, fn))
-        bind_methods(self, self)
+        if arity > 0 and 'self' in params:
+            # is a method
+
+            def method_call_on_future_instance(*params, **opts):
+                return fn(*params, **opts)
+
+            Base.__bind__.append((fn.__name__, method_call_on_future_instance))
+            setattr(Base, name, method_call_on_future_instance)
+        elif arity == 0:
+            Base.__bind__.append((fn.__name__, fn))
+            setattr(Base, name, method_call_on_future_instance)
+
+        return fn
 
 
 def mkclass(name, bases=(), **clsattrs):
