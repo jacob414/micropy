@@ -13,6 +13,7 @@ install = (
     "funcy>=1.10.2",
     "pysistence>=0.4.1",
     "patterns>=0.3",
+    "jsonpickle>=1.2",
 )  # yapf: disable
 
 develop = (
