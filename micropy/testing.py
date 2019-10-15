@@ -9,13 +9,12 @@ import pytest
 from typing import Any
 
 
-class strategy(namespace):
+class strategy(namespace):  # pragma: nocov
     def like(x: Any) -> SearchStrategy:
         "Convenience method to find a Hypothesis Strategy for an object."
         return st.from_type(type(x))
 
     def mydicts() -> SearchStrategy:
-        # type: () -> None
         "Does mydicts"
         return st.dictionaries(('a', 'b', 'c'), (1, 2, 3))
 
@@ -26,7 +25,6 @@ strats = {float: st.floats, int: st.integers, dict: strat.mydicts}
 
 
 class fixture(namespace):
-    def params(namelist, *values):
-        # type: (namelist, values) -> None
+    def params(namelist: str, *values: Any) -> Any:
         "Does params"
         return pytest.mark.parametrize(namelist, values)

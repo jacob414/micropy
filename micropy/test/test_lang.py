@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# -*- yapf -*-
+# yapf
 
 import pytest
 
@@ -11,45 +11,41 @@ import _ast
 from typing import Any
 
 
+class Dispatching(object):
+    @lang.methdispatch
+    def reflect(self, arg):
+        raise NotImplementedError("Not implemented for {}".format(type(arg)))
+
+    @reflect.register(list)
+    def _(self, alist):
+        return (list, alist)
+
+    @reflect.register(int)
+    def _(self, anint):
+        return (int, anint)
+
+
 @pytest.fixture
 def Dispatcher():
-    class Dispatching(object):
-        @lang.methdispatch
-        def reflect(self, arg):
-            raise NotImplementedError("Not implemented for {}".format(
-                type(arg)))
-
-        @reflect.register(list)
-        def _(self, alist):
-            return (list, alist)
-
-        @reflect.register(int)
-        def _(self, anint):
-            return (int, anint)
-
     yield Dispatching
 
 
-def test_methdispatch(Dispatcher):
-    # type: () -> None
+def test_methdispatch(Dispatcher: Dispatching) -> None:
     "Should dispatch per type"
     assert Dispatcher().reflect([1, 2]) == (list, [1, 2])
 
 
 @pytest.fixture
 def Alt():
-    # type: () -> None
     "Does Alt"
     yield lang.mkclass('Alt')
 
 
-def test_mkclass_classmethod(Alt):
-    # type: () -> None
+def test_mkclass_classmethod(Alt: Any) -> None:
     "Should be able to declare dynamic class methods"
 
     @Alt.classmethod
-    def cmeth(cls, x, y):
-        # type: (cls) -> None
+    def cmeth(cls, x, y) -> int:
         "Does cmeth"
         return x + y
 
@@ -58,13 +54,11 @@ def test_mkclass_classmethod(Alt):
         "Expected 2, got {}".format(sum)
 
 
-def test_mkclass_staticmethod(Alt):
-    # type: () -> None
+def test_mkclass_staticmethod(Alt: Any) -> None:
     "Should be able to declare dynamic class methods"
 
     @Alt.staticmethod
     def smeth(x, y):
-        # type: (cls) -> None
         "Does cmeth"
         return x + y
 
@@ -74,7 +68,6 @@ def test_mkclass_staticmethod(Alt):
 
 
 def test_method_on_type_0param(Alt: Alt) -> None:
-    # type: () -> None
     "Should handle methods without parameters correctly"
 
     @Alt.method
@@ -88,11 +81,10 @@ def test_method_on_type_0param(Alt: Alt) -> None:
 
 
 def test_method_on_type_nary(Alt: Alt) -> None:
-    # type: () -> None
     "Should"
 
     @Alt.method
-    def meth_on_type(self: Alt, foo: Any):
+    def meth_on_type(self: Alt, foo: str):
         "Does meth_on_type"
         self.foo = foo
 
@@ -106,8 +98,7 @@ def test_mkclass_bound_method(Alt: Alt) -> None:
     alt1, alt2 = Alt(), Alt()
 
     @alt1.method
-    def amethod(self, foo):
-        # type: (foo) -> None
+    def amethod(self: Alt, foo: int):
         "Does _"
         self.bar = foo + 1
 
@@ -129,8 +120,7 @@ def test_mkclass_bound_method(Alt: Alt) -> None:
     ('', False),
     (1, False),
 )
-def test_isprim_type(type_, expected):
-    # type: () -> None
+def test_isprim_type(type_: type, expected: Any) -> None:
     "Should work"
     assert lang.isprim_type(type_) == expected
 
@@ -139,24 +129,21 @@ int_or_same = lang.coerce_or_same(int)
 
 
 @fixture.params("value, expected", (1, 1), ('1', 1), ('x', 'x'))
-def test_coerce_or_same(value, expected):
-    # type: () -> None
+def test_coerce_or_same(value: Any, expected: Any) -> None:
     "Should convert strings with digits to `int`."
     assert int_or_same(value) == expected
 
 
 @pytest.fixture
-def xe():
+def xe() -> lang.XE:
     yield lang.XE(foo='foo', bar='bar')
 
 
-def test_xe_as_obj(xe):
-    # type: () -> None
+def test_xe_as_obj(xe: lang.XE) -> None:
     "Should "
     assert xe.foo == 'foo'
 
 
-def test_xe_as_dict(xe):
-    # type: (P.XE) -> None
+def test_xe_as_dict(xe: lang.XE) -> None:
     "Should be able to index XE object as dictionaries"
     assert xe['foo'] == 'foo'
