@@ -145,6 +145,23 @@ class Base(object):
     def __init__(self, *params, **opts):
         bind_methods(self.__class__, self)
 
+        def bind_method_on_self(self, fn):
+            # type: () -> None
+            "Does bound_on_instance"
+
+            name = fn.__name__
+
+            @wraps(fn)
+            def callit(*params, **opts):
+                # type: (*params, **opts) -> None
+                "Does callit"
+                return fn(self, *params, **opts)
+
+            setattr(self, name, callit)
+            return callit
+
+        self.method = types.MethodType(bind_method_on_self, self)
+
     @__staticmethod__
     def __wrapper(fn, Cls=None, name=None):
         # type: () -> None
@@ -174,8 +191,17 @@ class Base(object):
     def staticmethod(fn):
         return Base.__wrapper(fn)
 
-    @__staticmethod__
-    def method(fn):
+    def def_method_on_instance(self, fn):
+        # type: () -> None
+        "Does def_method_on_instance"
+
+        def method_call_on_future_instance(*params, **opts):
+            return fn(*params, **opts)
+
+        return method_call_on_future_instance
+
+    @__classmethod__
+    def method(Subclass, fn):
         # type: (fn) -> None
         "Creates a method from the decorated function `fn`"
         sig = inspect.signature(fn)
@@ -183,14 +209,43 @@ class Base(object):
         params = dict(sig.parameters.items())
         arity = len(params)
 
+        self_instance = None
+
         if arity > 0 and 'self' in params:
             # is a method
 
             def method_call_on_future_instance(*params, **opts):
+                if self_instance:
+                    params = (self_instance, ) + params
                 return fn(*params, **opts)
 
-            Base.__bind__.append((fn.__name__, method_call_on_future_instance))
-            setattr(Base, name, method_call_on_future_instance)
+            # Subclass = fn.__globals__[fn.__globals__['name']]
+
+            mw = fn.__hash__  # should always be there
+            xx = [
+                x for x in mw.__self__.__globals__ if isinstance(x, Subclass)
+            ]
+
+            for name_ in mw.__self__.__globals__.keys():
+                if isinstance(mw.__self__.__globals__[name_], Subclass):
+                    if name_ in mw.__self__.__globals__:
+                        self_instance = mw.__self__.__globals__[name_]
+
+            if self_instance and mw.__self__.__globals__:
+                instance_or_type = self_instance
+                print(self_instance)
+                self_instance
+                print(f'Instance {instance_or_type} found for method {name}')
+                setattr(instance_or_type, name,
+                        types.MethodType(fn, self_instance))
+            else:
+                # no instance in scope above
+                instance_or_type = Subclass
+                print('Interpreted as subclass, proceed with that')
+                Subclass.__bind__.append(
+                    (fn.__name__, method_call_on_future_instance))
+                setattr(Subclass, name, method_call_on_future_instance)
+
         elif arity == 0:
             Base.__bind__.append((fn.__name__, fn))
             setattr(Base, name, method_call_on_future_instance)
