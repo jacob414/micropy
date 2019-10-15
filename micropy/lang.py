@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
 # yapf
 
-import ast
-import inspect
-import patterns
 import funcy
 import types
-import copy
-import typing
 import numbers
-import funcy
 from functools import singledispatch
 from pysistence import Expando
+from typing import Any, Mapping, Iterable, Callable, Tuple
 
-import itertools
-from functools import partial, wraps, update_wrapper
-
-from micropy import primitives
+from functools import wraps, update_wrapper
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
@@ -26,8 +18,7 @@ isint = funcy.isa(int)
 isdict = funcy.isa(dict)
 
 
-def typename(x):
-    # type: (Any) -> str
+def typename(x: Any) -> str:
     """Safely get a type name from parameter `x`. If `x == None` returns
     `'None'`
 
@@ -36,15 +27,20 @@ def typename(x):
 
 
 class XE(Expando):
-    __getitem__ = lambda self, attr: getattr(self, attr)
-    iteritems = lambda self: self.to_dict().iteritems()
+    def __getitem__(self: 'XE', attr: str) -> Any:
+        "Support for getting attributes as named string indexes"
+        return getattr(self, attr)
+
+    def iteritems(self: 'XE') -> Mapping[str, Any]:
+        # type: (self) -> None
+        "Does iteritems"
+        return self.to_dict().items()
 
     def get(self, name, default=None):
         return self.to_dict().get(name, default)
 
 
-def pubvars(obj):
-    # type: (Any) -> Iterable
+def pubvars(obj: Any) -> Iterable:
     "Returns all public variables except methods"
     if isdict(obj):
         return obj.keys()
@@ -59,8 +55,10 @@ def isprimitive(obj):
     # type: (Any) -> bool
     "Determines if a value belongs to a primitive type (= {numbers, strings})"
 
-    if numeric(obj): return True
-    elif textual(obj): return True
+    if numeric(obj):
+        return True
+    elif textual(obj):
+        return True
 
     return False
 
@@ -73,7 +71,8 @@ def isprim_type(type_):
 
 def tolerant_or_original(Exc, fn):
     # type: (Exception, Callable) -> None
-    """Returns a function that will allow the Exception(s) in `Exc` to occur."""
+    """Returns a function that will allow the Exception(s) in `Exc` to
+    occur."""
     def invoke(obj):
         # type: (obj) -> None
         "Does invoke"
@@ -85,9 +84,11 @@ def tolerant_or_original(Exc, fn):
     return invoke
 
 
-coerce_or_same = lambda T: tolerant_or_original(
-    (TypeError, ValueError, AttributeError), T)
-"Special case of `tolerant_or_original()` for type coercion."
+def coerce_or_same(T: Any) -> str:
+    "Special case of `tolerant_or_original()` for type coercion."
+    "Does coerce_or_same"
+    return tolerant_or_original((TypeError, ValueError, AttributeError), T)
+
 
 maybe_int = coerce_or_same(int)
 
@@ -118,15 +119,6 @@ def primbases(cls):
     return [T for T in cls.__bases__ if isprim_type(T)]
 
 
-def primitve_instance(cls, *params, **opts):
-    # type: (cls, *args, **kwargs) -> Any
-    "Does acts_as_primitve"
-    primparams = [v for v in params if isprim_type(type(v))]
-    instance = PrimType.__new__(cls, *primparams, **opts)
-    instance.prim_type = PrimType
-    return instance
-
-
 def bind_methods(Base, instance):
     # type: (instance, Base) -> None
     "Does bind_methods"
@@ -144,6 +136,23 @@ class Base(object):
 
     def __init__(self, *params, **opts):
         bind_methods(self.__class__, self)
+
+        def bind_method_on_self(self, fn):
+            # type: () -> None
+            "Does bound_on_instance"
+
+            name = fn.__name__
+
+            @wraps(fn)
+            def callit(*params, **opts):
+                # type: (*params, **opts) -> None
+                "Does callit"
+                return fn(self, *params, **opts)
+
+            setattr(self, name, callit)
+            return callit
+
+        self.method = types.MethodType(bind_method_on_self, self)
 
     @__staticmethod__
     def __wrapper(fn, Cls=None, name=None):
@@ -174,27 +183,11 @@ class Base(object):
     def staticmethod(fn):
         return Base.__wrapper(fn)
 
-    @__staticmethod__
-    def method(fn):
+    @__classmethod__
+    def method(Subclass, fn):
         # type: (fn) -> None
         "Creates a method from the decorated function `fn`"
-        sig = inspect.signature(fn)
-        name = fn.__name__
-        params = dict(sig.parameters.items())
-        arity = len(params)
-
-        if arity > 0 and 'self' in params:
-            # is a method
-
-            def method_call_on_future_instance(*params, **opts):
-                return fn(*params, **opts)
-
-            Base.__bind__.append((fn.__name__, method_call_on_future_instance))
-            setattr(Base, name, method_call_on_future_instance)
-        elif arity == 0:
-            Base.__bind__.append((fn.__name__, fn))
-            setattr(Base, name, method_call_on_future_instance)
-
+        setattr(Subclass, fn.__name__, types.MethodType(fn, Subclass))
         return fn
 
 
@@ -204,57 +197,3 @@ def mkclass(name, bases=(), **clsattrs):
 
     Gen = type(name, (Base, ) + bases, clsattrs)
     return Gen
-
-
-# pprint(primitives.explore(argsbuild(('foo', 'bar'), hello='world')))
-
-# POC 9:e feb
-# from micropy import lang
-
-# def re_eval(top, globals_=None):
-#     recompiled = compile(top, 'mame', 'single')
-#     if globals_ is None:
-#         globals_ = globals()
-#     env = {}
-#     eval(recompiled, globals(), env)
-#     first, = env.values()
-#     return first
-
-# def foo():
-#     # type: () -> None
-#     "Does foo"
-#     (1 + 3) / 2
-
-# nodes = lang.body(foo)
-# n0, n1 = nodes
-# n1.value.n = 2
-
-# print(lang.eval_(nodes, foo)())
-
-# In [52]: %%dump_ast
-#    ....: @dec1
-#    ....: @dec2
-#    ....: def f(a: 'annotation', b=1, c=2, *d, e, f=3, **g) -> 'return annotation':
-#    ....:   pass
-#    ....:
-# Module(body=[
-#     FunctionDef(name='f', args=arguments(args=[
-#         arg(arg='a', annotation=Str(s='annotation')),
-#         arg(arg='b', annotation=None),
-#         arg(arg='c', annotation=None),
-#       ], vararg=arg(arg='d', annotation=None), kwonlyargs=[
-#         arg(arg='e', annotation=None),
-#         arg(arg='f', annotation=None),
-#       ], kw_defaults=[
-#         None,
-#         Num(n=3),
-#       ], kwarg=arg(arg='g', annotation=None), defaults=[
-#         Num(n=1),
-#         Num(n=2),
-#       ]), body=[
-#         Pass(),
-#       ], decorator_list=[
-#         Name(id='dec1', ctx=Load()),
-#         Name(id='dec2', ctx=Load()),
-#       ], returns=Str(s='return annotation')),
-#   ])

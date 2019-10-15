@@ -149,12 +149,13 @@ def test_tuple_attr_eq(tup_a):
     assert tup_a.eq(dig.TupleAttr.infer('foo', (1, 2, 3)))
 
 
-@testing.fixture.params("PrimType, value",
+@testing.fixture.params(
+    "PrimType, value",
     (int, 1),
     (tuple, (1, 2)),
     (float, 1.1),
-    (str, 'abcd')
-)  # yapf: disable
+    (str, 'abcd'),
+)
 def test_infer(PrimType, value):
     # type: (str, Any) -> None
     "Should create attribute"

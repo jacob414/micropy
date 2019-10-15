@@ -87,11 +87,14 @@ class Attr:
         "Cast value to primitive type."
 
         # NB: Special case to avoid infinite recursion.
-        if self.PrimType is str: return str.__str__(self)
+        if self.PrimType is str:
+            return str.__str__(self)
 
-        elif self.PrimType is lang.Undefined: return '????'
+        elif self.PrimType is lang.Undefined:
+            return '????'
 
-        else: return self.PrimType(self)
+        else:
+            return self.PrimType(self)
 
     @property
     def type_name(self):
@@ -99,9 +102,11 @@ class Attr:
         "Return name of primitive type"
 
         # NB: Special case to avoid infinite recursion.
-        if self.PrimType is str: return 'str'
+        if self.PrimType is str:
+            return 'str'
 
-        else: return self.PrimType.__name__
+        else:
+            return self.PrimType.__name__
 
     def __str__(self):
         return "{}={}:{}".format(self.name, self.raw_value, self.type_name)
@@ -117,7 +122,8 @@ class Attr:
 
     def __eq__(self, other):
         if hasattr(other, 'name'):
-            return other.name == self.name and other.raw_value == self.raw_value
+            return (other.name == self.name
+                    and other.raw_value == self.raw_value)
         else:
             return other == self.raw_value
 
@@ -137,8 +143,10 @@ for name, PrimType in (('IntAttr', int),
 def xget(obj, idx):
     # type: (Any, Any) -> Optional[AttrResults, Attr]
     "Does foo"
-    if lang.isprimitive(obj): return obj
-    if callable(obj): return obj(idx)  # ???
+    if lang.isprimitive(obj):
+        return obj
+    if callable(obj):
+        return obj(idx)  # ???
 
     def attempt_many():
         # type: () -> None

@@ -8,6 +8,8 @@ from micropy.testing import fixture
 from hypothesis import given, example, strategies as st
 import _ast
 
+from typing import Any
+
 
 @pytest.fixture
 def Dispatcher():
@@ -56,6 +58,49 @@ def test_mkclass_classmethod(Alt):
         "Expected 2, got {}".format(sum)
 
 
+def test_mkclass_staticmethod(Alt):
+    # type: () -> None
+    "Should be able to declare dynamic class methods"
+
+    @Alt.staticmethod
+    def smeth(x, y):
+        # type: (cls) -> None
+        "Does cmeth"
+        return x + y
+
+    sum = Alt.smeth(1, 1)
+    assert sum == 2, \
+        "Expected 2, got {}".format(sum)
+
+
+def test_method_on_type_0param(Alt: Alt) -> None:
+    # type: () -> None
+    "Should handle methods without parameters correctly"
+
+    @Alt.method
+    def paramless_method(self: Alt):
+        "An example parameterless method"
+        self.foo = id(self)
+
+    alt0 = Alt()
+    alt0.paramless_method()
+    assert type(alt0.foo) is int
+
+
+def test_method_on_type_nary(Alt: Alt) -> None:
+    # type: () -> None
+    "Should"
+
+    @Alt.method
+    def meth_on_type(self: Alt, foo: Any):
+        "Does meth_on_type"
+        self.foo = foo
+
+    alt0 = Alt()
+    alt0.meth_on_type('bar')
+    assert alt0.foo == 'bar'
+
+
 def test_mkclass_bound_method(Alt: Alt) -> None:
     "Should be able to add methods to individual objects."
     alt1, alt2 = Alt(), Alt()
@@ -71,7 +116,8 @@ def test_mkclass_bound_method(Alt: Alt) -> None:
     assert not hasattr(alt2, 'amethod')
 
 
-@fixture.params("type_, expected",
+@fixture.params(
+    "type_, expected",
     (int, True),
     (bool, True),
     (float, True),
@@ -82,7 +128,7 @@ def test_mkclass_bound_method(Alt: Alt) -> None:
     (object, False),
     ('', False),
     (1, False),
-)  # yapf: disable
+)
 def test_isprim_type(type_, expected):
     # type: () -> None
     "Should work"
@@ -97,3 +143,20 @@ def test_coerce_or_same(value, expected):
     # type: () -> None
     "Should convert strings with digits to `int`."
     assert int_or_same(value) == expected
+
+
+@pytest.fixture
+def xe():
+    yield lang.XE(foo='foo', bar='bar')
+
+
+def test_xe_as_obj(xe):
+    # type: () -> None
+    "Should "
+    assert xe.foo == 'foo'
+
+
+def test_xe_as_dict(xe):
+    # type: (P.XE) -> None
+    "Should be able to index XE object as dictionaries"
+    assert xe['foo'] == 'foo'
