@@ -7,12 +7,12 @@ from micropy import lang
 
 from micropy.survive_2020 import inspect
 
+from altered import E
+
 hairy_strategy = recursive(
     none() | booleans() | floats() | text(alphabet=string.hexdigits),
     (lambda children: lists(children, 1) | dictionaries(
         text(alphabet=string.hexdigits), children, min_size=1)))
-
-from altered import E
 
 
 def hairy_ob():

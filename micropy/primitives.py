@@ -7,10 +7,9 @@ import ast
 import sys
 from itertools import islice
 
-from collections.abc import Iterable
+from typing import Any
 
-from pysistence import Expando
-from pysistence.expando import make_expando_class
+from collections.abc import Iterable
 
 from . import lang
 
@@ -59,25 +58,10 @@ def raises(ExcType):
 IT = type(int)
 itrt = Iterable
 
-empty_ob = lambda o: o is object and len(o.__dict) == 0
 
-
-class LWO(object):
-    def __init__(self, *args, **kw):
-        self.__dict__.update(**kw)
-
-    def has(self, fn):
-        # typse: (fn) -> None
-        "Does meth"
-
-        def invoke(*args, **kw):
-            # type: () -> None
-            "Does wrap"
-            res = fn(*args, **kw)
-            return res
-
-        setattr(self, fn.__name__, invoke)
-        return invoke
+def empty_ob(o: Any) -> bool:
+    "Does empty_ob"
+    return o is object and len(o.__dict) == 0
 
 
 def func_file(func):
@@ -88,20 +72,4 @@ def nanoast(obj):
     # type: (obj) -> None
     "Does nanoast"
     source = inspect.getsource(obj)
-    # source = re.sub(r'(^|\n)' + spaces, '\n', source)
-    # if spaces:
-    #     source = re.sub(r'(^|\n)' + spaces, '\n', source)
     return ast.parse(source, func_file(obj), 'single')
-
-
-class XE(Expando):
-    """Thin convenience wrapper around Pysistence's Expando class. Makes
-    the Expando appear as both `dict` and `object`.
-
-    """
-
-    __getitem__ = lambda self, attr: getattr(self, attr)
-    iteritems = lambda self: self.to_dict().iteritems()
-
-    def get(self, name, default=None):
-        return self.to_dict().get(name, default)

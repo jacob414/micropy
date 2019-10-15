@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
 # yapf
 
-import ast
-import inspect
-import patterns
 import funcy
 import types
-import copy
 import numbers
-import funcy
 from functools import singledispatch
 from pysistence import Expando
-from typing import Any, Mapping
+from typing import Any, Mapping, Iterable, Callable, Tuple
 
-import itertools
-from functools import partial, wraps, update_wrapper
-
-from micropy import primitives
+from functools import wraps, update_wrapper
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
@@ -26,8 +18,7 @@ isint = funcy.isa(int)
 isdict = funcy.isa(dict)
 
 
-def typename(x):
-    # type: (Any) -> str
+def typename(x: Any) -> str:
     """Safely get a type name from parameter `x`. If `x == None` returns
     `'None'`
 
@@ -49,8 +40,7 @@ class XE(Expando):
         return self.to_dict().get(name, default)
 
 
-def pubvars(obj):
-    # type: (Any) -> Iterable
+def pubvars(obj: Any) -> Iterable:
     "Returns all public variables except methods"
     if isdict(obj):
         return obj.keys()
@@ -127,15 +117,6 @@ def primbases(cls):
     # type: (type) -> Any
     "Does primbase"
     return [T for T in cls.__bases__ if isprim_type(T)]
-
-
-def primitve_instance(cls, *params, **opts):
-    # type: (cls, *args, **kwargs) -> Any
-    "Does acts_as_primitve"
-    primparams = [v for v in params if isprim_type(type(v))]
-    instance = PrimType.__new__(cls, *primparams, **opts)
-    instance.prim_type = PrimType
-    return instance
 
 
 def bind_methods(Base, instance):

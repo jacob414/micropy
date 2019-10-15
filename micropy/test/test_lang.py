@@ -116,7 +116,8 @@ def test_mkclass_bound_method(Alt: Alt) -> None:
     assert not hasattr(alt2, 'amethod')
 
 
-@fixture.params("type_, expected",
+@fixture.params(
+    "type_, expected",
     (int, True),
     (bool, True),
     (float, True),
@@ -127,7 +128,7 @@ def test_mkclass_bound_method(Alt: Alt) -> None:
     (object, False),
     ('', False),
     (1, False),
-)  # yapf: disable
+)
 def test_isprim_type(type_, expected):
     # type: () -> None
     "Should work"
@@ -142,3 +143,20 @@ def test_coerce_or_same(value, expected):
     # type: () -> None
     "Should convert strings with digits to `int`."
     assert int_or_same(value) == expected
+
+
+@pytest.fixture
+def xe():
+    yield lang.XE(foo='foo', bar='bar')
+
+
+def test_xe_as_obj(xe):
+    # type: () -> None
+    "Should "
+    assert xe.foo == 'foo'
+
+
+def test_xe_as_dict(xe):
+    # type: (P.XE) -> None
+    "Should be able to index XE object as dictionaries"
+    assert xe['foo'] == 'foo'
