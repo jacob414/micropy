@@ -12,11 +12,11 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 import math
+from typing import Any
 
 
 @given(st.deferred(lambda: st.integers() | st.floats() | st.text()))
-def test_xget_prim(param):
-    # type: () -> None
+def test_xget_prim(param: Any) -> None:
     "Does test_xget_prim"
     result = dig.xget(param, 1)
     assert result == param or all(map(math.isnan, (param, result)))
@@ -111,40 +111,34 @@ def test_dig_complex():
 
 
 @pytest.fixture
-def attr():
-    # type: () -> None
+def attr() -> dig.Attr:
     "Does attr"
     inst = dig.Attr.infer('foo', 'bar')
     return inst
 
 
-def test_attr_eq(attr):
-    # type: () -> None
+def test_attr_eq(attr: dig.Attr) -> None:
     "Should equal"
     assert attr.eq(dig.Attr.infer('foo', 'bar'))
 
 
-def test_attr_typecheck(attr):
-    # type: () -> None
+def test_attr_typecheck(attr: dig.Attr) -> None:
     "Should typecheck"
     assert attr.isa(dig.Attr)
 
 
-def test_sibling(attr):
-    # type: () -> None
+def test_sibling(attr: dig.Attr) -> None:
     "Should be able to test instances for same type as other instance"
     assert attr.sibling(dig.Attr.infer('bar', 'baz'))
 
 
 @pytest.fixture
-def tup_a():
-    # type: () -> None
+def tup_a() -> dig.TupleAttr:
     "Does tupe_attr"
     yield dig.TupleAttr.infer('foo', (1, 2, 3))
 
 
-def test_tuple_attr_eq(tup_a):
-    # type: () -> None
+def test_tuple_attr_eq(tup_a: dig.TupleAttr) -> None:
     "Should be sane"
     assert tup_a.eq(dig.TupleAttr.infer('foo', (1, 2, 3)))
 
@@ -156,8 +150,7 @@ def test_tuple_attr_eq(tup_a):
     (float, 1.1),
     (str, 'abcd'),
 )
-def test_infer(PrimType, value):
-    # type: (str, Any) -> None
+def test_infer(PrimType: type, value: Any) -> None:
     "Should create attribute"
     name = str(type(value))
     attr = dig.Attr.infer(name, value)
