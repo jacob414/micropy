@@ -6,7 +6,7 @@ import types
 import numbers
 from functools import singledispatch
 from pysistence import Expando
-from typing import Any, Mapping, Iterable, Callable, Tuple
+from typing import Any, Mapping, Iterable, Generator, Callable, Tuple
 
 from functools import wraps, update_wrapper
 
@@ -16,6 +16,16 @@ textual = funcy.isa(str)
 numeric = funcy.isa(numbers.Number)
 isint = funcy.isa(int)
 isdict = funcy.isa(dict)
+isgen = funcy.isa(types.GeneratorType)
+
+
+def unfold_gen(x: Generator[Any, None, None],
+               cast: type = tuple) -> Iterable[Any]:
+    """Quick recursive unroll of possibly nested (uses funcy library under
+    the hood)
+
+    """
+    return cast(funcy.flatten(x, isgen))
 
 
 def typename(x: Any) -> str:

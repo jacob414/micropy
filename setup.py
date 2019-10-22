@@ -6,7 +6,23 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import distutils.cmd
+
 import micropy
+
+
+class QACommand(distutils.cmd.Command):
+    user_options = []
+
+    def initialize_options(self: 'QACommand') -> None:
+        pass
+
+    def finalize_options(self: 'QACommand') -> None:
+        pass
+
+    def run(self: 'QACommand') -> None:
+        print('run qa..')
+
 
 install = (
     "funcy>=1.10.2",
@@ -23,6 +39,9 @@ develop = (
 
 setup(
     name='micropy',
+    cmdclass={
+        'qa': QACommand,
+    },
     version=micropy.__version__,
     description="Some Python nicieties",
     packages=('micropy', ),

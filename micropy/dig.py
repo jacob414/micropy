@@ -184,16 +184,12 @@ class AttrQuery(tuple):
 def idig(obj, path):
     # type: (Any, Tuple[Any]) -> Generator[Attr, None, None]
     "Recursive query for attributes from `obj` by a sequence spec."
-    try:
-        key = path.pop(0)
-        point = xget(obj, key)
-        if path:
-            return idig(point, path)
-        else:
-            return point
-    except (IndexError, StopIteration):
-        pass
-    return
+    key = path.pop(0)
+    point = xget(obj, key)
+    if path:
+        return idig(point, path)
+    else:
+        return point
 
 
 def dig(obj, path):

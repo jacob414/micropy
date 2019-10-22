@@ -11,6 +11,21 @@ import _ast
 from typing import Any
 
 
+@pytest.fixture
+def rgen() -> None:
+    "A fixture with a recursive generator expression"
+    return (e for e in (1,
+                        2,
+                        (e for e in range(31, 34)),
+                        4,
+                        (e for e in range(51, 54))))  # yapf: disable
+
+
+def test_unfold_gen(rgen) -> None:
+    "Should unfold a recursive generator correctly."
+    assert lang.unfold_gen(rgen) == (1, 2, 31, 32, 33, 4, 51, 52, 53)
+
+
 class Dispatching(object):
     @lang.methdispatch
     def reflect(self, arg):
