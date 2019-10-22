@@ -6,7 +6,9 @@ Micropy is auto-formatted using [[https://github.com/google/yapf][yapf]].
 
 ** Nice things
 
-CSS selector like deep value grabbing from almost any object:
+*** dig()
+
+CSS selector like deep value grabbing from almost any object.
 
 #+BEGIN_SRC python
 >>> from micropy import dig
@@ -20,6 +22,25 @@ CSS selector like deep value grabbing from almost any object:
 'jox'
 >>>
 #+END_SRC
+
+The difference between =dig.dig()= and =funcy.get_in()= is that you
+can use shell-like blob patterns to get several values keyed by
+similar names:
+
+#+BEGIN_SRC python
+>>> from micropy import dig
+>>> res = dig.dig({'foo': 1, 'foop': 2}, 'f*')
+>>> res
+[foo=1:int, foop=2:int]
+>>> # (textual representation of an indexable object)
+>>> res[0]
+foo=1:int
+>>> res[1]
+foop=2:int
+>>>
+#+END_SRC
+
+
 
 Programmatic creation of arbitrary named classes in module definition,
 add methods using a decorator notation:
