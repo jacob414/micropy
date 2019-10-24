@@ -51,7 +51,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License (MIT)',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
 )
