@@ -22,6 +22,9 @@ develop = (
     "pytest>=5.0.1",
     "hypothesis>=4.24.3",
     "altered_states>=1.0.9",
+    "pycodestyle>=2.5.0",
+    "mypy>=0.730",
+    "pyflakes>=2.1.1",
 )  # yapf: disable
 
 try:
