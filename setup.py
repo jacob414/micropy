@@ -51,6 +51,7 @@ setup(
     extras_require={
         'test': install + develop,
     },
+    url='https://www.414soft.com/micropy',
     license='MIT',
     classifiers=[
         'Programming Language :: Python',
