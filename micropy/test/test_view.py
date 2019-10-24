@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-# -*- yapf -*-
-
-import pytest
+# yapf
 
 from micropy import view
-
-from altered import E
 
 
 def test_view_single():

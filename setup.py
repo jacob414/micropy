@@ -6,23 +6,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import distutils.cmd
-
 import micropy
-
-
-class QACommand(distutils.cmd.Command):
-    user_options = []
-
-    def initialize_options(self: 'QACommand') -> None:
-        pass
-
-    def finalize_options(self: 'QACommand') -> None:
-        pass
-
-    def run(self: 'QACommand') -> None:
-        print('run qa..')
-
 
 install = (
     "funcy>=1.10.2",
@@ -37,11 +21,19 @@ develop = (
     "altered_states>=1.0.9",
 )  # yapf: disable
 
+try:
+    # make setup.py review available only to fully dev-capable
+    # interpreter instances
+    import mypy
+
+    from micropy.testing import ReviewProject
+    cmdclass = {'review': ReviewProject}
+except ImportError:
+    cmdclass = {}
+
 setup(
     name='micropy',
-    cmdclass={
-        'qa': QACommand,
-    },
+    cmdclass=cmdclass,
     version=micropy.__version__,
     description="Some Python nicieties",
     packages=('micropy', ),
@@ -51,6 +43,7 @@ setup(
     extras_require={
         'test': install + develop,
     },
+    url='https://www.414soft.com/micropy',
     license='MIT',
     classifiers=[
         'Programming Language :: Python',

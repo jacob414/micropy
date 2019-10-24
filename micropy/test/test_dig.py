@@ -50,8 +50,6 @@ def test_xget_glob_keys_all():
     # type: () -> None
     "Should get keys of dict"
     obj = {'foo': 1, 'bar': 2}
-    val = dig.xget(obj, 'foo')
-    xx = dig.Attr.infer('foo', val)
     resultset = dig.xget(obj, '*')
     textual = str(resultset)
     assert textual == '[foo=1:int, bar=2:int]'

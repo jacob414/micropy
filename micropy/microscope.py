@@ -3,21 +3,24 @@
 
 from pprint import pformat
 import json
-import jsonpickle
+import jsonpickle  # type: ignore
 
 from typing import Any
 
 
-def expose(x: Any) -> str:
-    # type: (x) -> None
+def expose(x: Any, shrink_right: int = 1) -> str:
     """Abuses modules `json` and `jsonpickle` to expose internals of
-    (almost) any object
+    (almost) any object.
 
     """
     return json.loads(jsonpickle.dumps(x))
 
 
-def look(x, shrink_right=' '):
-    # type: (x) -> None
-    "Does look"
-    print(print(pformat(expose(x)).replace('    ', shrink_right)))
+def look(x: Any, shrink_right: int = 1) -> None:
+    """Dumps any object to stdout using the technique in `expose()`.
+
+    The parameter `shrink_right` is used to set narrowing of
+    indentation. (Use `0` to turn off).
+
+    """
+    print(pformat(expose(x, shrink_right).replace('    ', shrink_right * ' ')))

@@ -1,30 +1,97 @@
 # -*- coding: utf-8 -*-
 # yapf
 
-from hypothesis import strategies as st
-from hypothesis.searchstrategy.lazy import SearchStrategy
-from funcy import namespace
-import pytest
+import sys
+import io
+from typing import Any, Tuple, List
 
-from typing import Any
+import distutils.cmd
 
+import funcy  # type: ignore
+import pytest  # type: ignore
 
-class strategy(namespace):  # pragma: nocov
-    def like(x: Any) -> SearchStrategy:
-        "Convenience method to find a Hypothesis Strategy for an object."
-        return st.from_type(type(x))
+from altered import state  # type: ignore
 
-    def mydicts() -> SearchStrategy:
-        "Does mydicts"
-        return st.dictionaries(('a', 'b', 'c'), (1, 2, 3))
+import pycodestyle  # type: ignore
+import mypy.api  # type: ignore
 
-
-strat = strategy
-
-strats = {float: st.floats, int: st.integers, dict: strat.mydicts}
+import pyflakes.api  # type: ignore
 
 
-class fixture(namespace):
+class fixture(object):
+    @staticmethod
     def params(namelist: str, *values: Any) -> Any:
         "Does params"
         return pytest.mark.parametrize(namelist, values)
+
+
+class ReviewProject(distutils.cmd.Command):
+    user_options: List[str] = []
+
+    def initialize_options(self: 'ReviewProject') -> None:
+        pass
+
+    def finalize_options(self: 'ReviewProject') -> None:
+        pass
+
+    @staticmethod
+    def lint() -> Tuple[int, str, str]:
+        print('     pyflakes...')
+        warn, err = io.StringIO(), io.StringIO()
+        code = pyflakes.api.checkRecursive(
+            ['micropy'],  # package directory
+            pyflakes.reporter.Reporter(warningStream=warn, errorStream=err))
+        return (code, warn.getvalue(), err.getvalue())
+
+    @staticmethod
+    def style() -> Tuple[int, str, str]:
+        """Runs pycodestyle, unpleasantly white-boxy call.  ..but it doesn't
+         seem to be written for integration, so:
+
+        """
+        print('     pycodestyle...')
+        code = 0
+        warn, err = io.StringIO(), io.StringIO()
+        with state(sys, argv=[], stdout=warn, stderr=err):
+            try:
+                pycodestyle._main()
+            except SystemExit as exc:
+                code = exc.code
+        return code, warn.getvalue(), err.getvalue()
+
+    @staticmethod
+    def types() -> Tuple[int, str, str]:
+        "Runs MyPy, the standard Python type checker."
+        print('     MyPy...')
+        warn, err, code = mypy.api.run(['.'])
+        return code, warn, err
+
+    @staticmethod
+    def separator_line() -> None:
+        "Prints a separating line of 79 characters wide."
+        print()
+        print(79 * '-')
+
+    def run(self: 'ReviewProject') -> None:
+        "Runs the setup task `'review'`."
+        reports = {
+            'pyflakes': ReviewProject.lint(),
+            'pycodestyle': ReviewProject.style(),
+            'mypy': ReviewProject.types(),
+        }
+
+        for tool in reports:
+            code, warn, err = reports[tool]
+            if code != 0:
+                ReviewProject.separator_line()
+                print(f'{tool}: code {code}')
+                print('WARN')
+                print(warn)
+                print('ERROR')
+                print(err)
+
+        issues = sum(funcy.walk_values(lambda x: x[0], reports).values())
+        if issues > 0:
+            ReviewProject.separator_line()
+            print()
+            print(f'{issues} issues found.')

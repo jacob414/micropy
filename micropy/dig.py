@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 # yapf
 
-from . import lang
-import funcy
+import hashlib
 import fnmatch
+
+from . import lang
 from dataclasses import dataclass
 from functools import singledispatch
-
-import pysistence
 
 
 @dataclass
@@ -18,7 +17,6 @@ class Attr:
 
     @staticmethod
     def split(params):
-        # type: (*Any) -> Tuple[str, Any]
         "Does split"
         name, value = '<anon:??>', None
         arity = len(params)
@@ -46,13 +44,11 @@ class Attr:
 
         @eq.register(Attr)
         def _(other):
-            # type: (other) -> None
             "Does _"
             return other.name == obj.name and other == obj
 
         @eq.register(cls.PrimType)
         def _(other):
-            # type: (other) -> None
             "Does _"
             return other == obj.raw_value
 
@@ -83,7 +79,6 @@ class Attr:
 
     @property
     def raw_value(self):
-        # type: (self) -> None
         "Cast value to primitive type."
 
         # NB: Special case to avoid infinite recursion.
@@ -98,7 +93,6 @@ class Attr:
 
     @property
     def type_name(self):
-        # type: (self) -> None
         "Return name of primitive type"
 
         # NB: Special case to avoid infinite recursion.
@@ -115,7 +109,6 @@ class Attr:
         return str(self)
 
     def __hash__(self):
-        # type: (self) -> None
         "Does __hash__"
         value = self.PrimType(self)
         return hashlib.sha1('{}:{}'.format(self.name, value)).hexdigest()
@@ -141,7 +134,6 @@ for name, PrimType in (('IntAttr', int),
 
 
 def xget(obj, idx):
-    # type: (Any, Any) -> Optional[AttrResults, Attr]
     "Does foo"
     if lang.isprimitive(obj):
         return obj
@@ -149,7 +141,6 @@ def xget(obj, idx):
         return obj(idx)  # ???
 
     def attempt_many():
-        # type: () -> None
         "Does attempt_many"
         vars_ = lang.pubvars(obj)
         attrs = fnmatch.filter(vars_, idx)
@@ -169,7 +160,6 @@ def xget(obj, idx):
 
 class AttrQuery(tuple):
     def __new__(cls, parts, *params, **opts):
-        # type: (cls, name *params, **kwargs) -> None
         "Does __new__"
         pt, = lang.primbases(cls)
         instance = pt.__new__(cls, parts, *params, **opts)
@@ -177,12 +167,10 @@ class AttrQuery(tuple):
 
     @staticmethod
     def from_text(text):
-        # type: (str) -> AttrQuery
         return AttrQuery(tuple(text.split('.')))
 
 
 def idig(obj, path):
-    # type: (Any, Tuple[Any]) -> Generator[Attr, None, None]
     "Recursive query for attributes from `obj` by a sequence spec."
     key = path.pop(0)
     point = xget(obj, key)
@@ -193,7 +181,6 @@ def idig(obj, path):
 
 
 def dig(obj, path):
-    # type: (Any, str) -> FoundAttrs
     "Recursive query for attributes from `obj` by string spec."
 
     return idig(obj, path.split('.'))

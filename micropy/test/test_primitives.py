@@ -1,6 +1,5 @@
 # yapf
 import pytest
-from hypothesis import given, example, strategies as st
 
 from micropy import primitives as P
 

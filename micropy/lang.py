@@ -6,7 +6,7 @@ import types
 import numbers
 from functools import singledispatch
 from pysistence import Expando
-from typing import Any, Mapping, Iterable, Generator, Callable, Tuple
+from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable
 
 from functools import wraps, update_wrapper
 
@@ -42,7 +42,6 @@ class XE(Expando):
         return getattr(self, attr)
 
     def iteritems(self: 'XE') -> Mapping[str, Any]:
-        # type: (self) -> None
         "Does iteritems"
         return self.to_dict().items()
 
@@ -62,7 +61,6 @@ def pubvars(obj: Any) -> Iterable:
 
 
 def isprimitive(obj):
-    # type: (Any) -> bool
     "Determines if a value belongs to a primitive type (= {numbers, strings})"
 
     if numeric(obj):
@@ -74,17 +72,14 @@ def isprimitive(obj):
 
 
 def isprim_type(type_):
-    # type: (type_) -> None
     "Does primtype"
     return True if type_ in PRIMTYPES else False
 
 
 def tolerant_or_original(Exc, fn):
-    # type: (Exception, Callable) -> None
     """Returns a function that will allow the Exception(s) in `Exc` to
     occur."""
-    def invoke(obj):
-        # type: (obj) -> None
+    def invoke(obj) -> Any:
         "Does invoke"
         try:
             return fn(obj)
@@ -104,7 +99,6 @@ maybe_int = coerce_or_same(int)
 
 
 def methdispatch(func):
-    # type: (Callable) -> Callable
     """Thanks Zero Piraeus!
 
     https://stackoverflow.com/a/24602374/288672
@@ -124,13 +118,11 @@ class Undefined:
 
 
 def primbases(cls):
-    # type: (type) -> Any
     "Does primbase"
     return [T for T in cls.__bases__ if isprim_type(T)]
 
 
 def bind_methods(Base, instance):
-    # type: (instance, Base) -> None
     "Does bind_methods"
     for name, fn in instance.__bind__:
         setattr(Base, name, types.MethodType(fn, instance))
@@ -142,20 +134,18 @@ __staticmethod__ = staticmethod
 
 
 class Base(object):
-    __bind__ = []
+    __bind__: List[Tuple[Callable, Any]] = []
 
     def __init__(self, *params, **opts):
         bind_methods(self.__class__, self)
 
-        def bind_method_on_self(self, fn):
-            # type: () -> None
+        def bind_method_on_self(self: Any, fn: Callable):
             "Does bound_on_instance"
 
             name = fn.__name__
 
             @wraps(fn)
-            def callit(*params, **opts):
-                # type: (*params, **opts) -> None
+            def callit(*params: Any, **opts: Any) -> None:
                 "Does callit"
                 return fn(self, *params, **opts)
 
@@ -165,8 +155,7 @@ class Base(object):
         self.method = types.MethodType(bind_method_on_self, self)
 
     @__staticmethod__
-    def __wrapper(fn, Cls=None, name=None):
-        # type: () -> None
+    def __wrapper(fn: Callable, Cls: Any = None, name: str = None):
         "Does __wrapper"
         if name is None:
             name = fn.__name__
@@ -190,19 +179,17 @@ class Base(object):
         return Base.__wrapper(fn, Cls=cls)
 
     @__staticmethod__
-    def staticmethod(fn):
+    def staticmethod(fn: Callable) -> Callable:
         return Base.__wrapper(fn)
 
     @__classmethod__
-    def method(Subclass, fn):
-        # type: (fn) -> None
+    def method(Subclass: Any, fn: Callable) -> Callable:
         "Creates a method from the decorated function `fn`"
         setattr(Subclass, fn.__name__, types.MethodType(fn, Subclass))
         return fn
 
 
-def mkclass(name, bases=(), **clsattrs):
-    # type: (str, Tuple[Any, Any]) -> Any
+def mkclass(name: str, bases: Tuple = (), **clsattrs: Any) -> Any:
     "Does mkclass"
 
     Gen = type(name, (Base, ) + bases, clsattrs)
