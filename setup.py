@@ -6,7 +6,10 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import os
 import micropy
+import tempfile
+import subprocess
 
 install = (
     "funcy>=1.10.2",
@@ -31,11 +34,23 @@ try:
 except ImportError:
     cmdclass = {}
 
+# Try to convert README to RST using pandoc (allowed to fail).
+long_desc = ''
+try:
+    tmpdir = tempfile.mkdtemp()
+    outpath = os.path.join(tmpdir, 'micropy-README.rst')
+    subprocess.check_call(['pandoc', 'README.org', '-o', outpath])
+    with open(outpath) as fp:
+        long_desc = fp.read()
+except Exception as exc:
+    long_desc = ''  # nothing to do.
+
 setup(
     name='micropy',
     cmdclass=cmdclass,
     version=micropy.__version__,
     description="Some Python nicieties",
+    long_description=long_desc,
     packages=('micropy', ),
     author='Jacob Oscarson',
     author_email='jacob@414soft.com',
