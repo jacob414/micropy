@@ -1,17 +1,12 @@
 # yapf
 
 import inspect
-import re
-import inspect
 import ast
 import sys
-from itertools import islice
 
-from typing import Any
+from typing import Any, List, Callable
 
 from collections.abc import Iterable
-
-from . import lang
 
 
 def pipe(invalue, *chain):

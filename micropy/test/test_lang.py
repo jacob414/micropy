@@ -5,8 +5,6 @@ import pytest
 
 from micropy import lang
 from micropy.testing import fixture
-from hypothesis import given, example, strategies as st
-import _ast
 
 from typing import Any
 
