@@ -23,4 +23,4 @@ def look(x: Any, shrink_right: int = 1) -> None:
     indentation. (Use `0` to turn off).
 
     """
-    print(pformat(expose(x, shrink_right).replace('    ', shrink_right * ' ')))
+    print(pformat(expose(x, shrink_right)).replace('    ', shrink_right * ' '))
