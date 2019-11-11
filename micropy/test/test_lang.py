@@ -160,3 +160,54 @@ def test_xe_as_obj(xe: lang.XE) -> None:
 def test_xe_as_dict(xe: lang.XE) -> None:
     "Should be able to index XE object as dictionaries"
     assert xe['foo'] == 'foo'
+
+
+@pytest.fixture
+def simplest_pipe() -> None:
+    "A fixture with a Piping object that only supports add."
+
+    class PipingExample(lang.Piping):
+        def __add__(self, value) -> None:
+            "Does __add__"
+            self.result = self.result + value
+            return self
+
+    return PipingExample(10)
+
+
+def test_piping_simplest(simplest_pipe) -> None:
+    "Should piping_simplest"
+    res = simplest_pipe + 10 + 20
+    assert res() == 40
+
+
+def test_piping_simplest_restrictive(simplest_pipe) -> None:
+    "Should piping_simplest_restrictive1"
+    with pytest.raises(NotImplementedError):
+        simplest_pipe + 10 - 20
+
+
+def test_piping_as_filter() -> None:
+    """Piping object should be able to work as filters provided a
+    formattting function is specified.
+
+    """
+    class Minimum(lang.Piping):
+        def __add__(self, value) -> lang.Piping:
+            "Add operation"
+            self.result = self.result + value
+            return self
+
+    fltr = (Minimum(8, lambda self, result, x: x > 10) + 1 + 1)
+    assert tuple(filter(fltr, (8, 9, 10, 11, 12))) == (11, 12)
+
+
+def test_piping_as_mapping() -> None:
+    """Piping objects derived from `ComposePiping` should always support
+    the bitwise pipe (`'|'`) operatror as a simple function
+    composition.
+
+    """
+    incr = lambda x: x + 1
+    showr = "It is {}!".format
+    assert (lang.ComposePiping(5) | incr | incr | showr)() == "It is 7!"

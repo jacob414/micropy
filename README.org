@@ -41,6 +41,7 @@ foop=2:int
 #+END_SRC
 
 
+** Programmatic class creation
 
 Programmatic creation of arbitrary named classes in module definition,
 add methods using a decorator notation:
@@ -76,5 +77,33 @@ add methods using a decorator notation:
 2
 >>> foo.y
 2
+>>>
+#+END_SRC
+
+** A simple way of creating small DSL's using Python operator overloading.
+
+#+BEGIN_SRC python
+>>> from micropy import lang
+>>> \
+... class PipingExample(lang.Piping):
+...     def __add__(self, value) -> lang.Piping:
+...         self.result = self.result + value
+...         return self
+>>> simplest_pipe = PipingExample(10)
+>>> res = simplest_pipe + 10 + 20
+>>> res()
+40
+>>>
+#+END_SRC
+
+Mostly, you'll want to use the pipe operator to define simple
+composition:
+
+#+BEGIN_SRC python
+>>> from micropy import lang
+>>> incr = lambda x: x + 1
+>>> showr = "It is {}!".format
+>>> (lang.ComposePiping(5) | incr | incr | showr)()
+'It is 7!'
 >>>
 #+END_SRC

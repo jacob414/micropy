@@ -197,6 +197,21 @@ def mkclass(name: str, bases: Tuple = (), **clsattrs: Any) -> Any:
 
 
 class Piping(object):
+    """Piping objects is for (ab)using Python operator overloading to
+    build small pipeline-DSL's.
+
+    The most basic one will simply refuse to do anything - you have to
+    give it instructions/permissions on everything it's made for ;-)."""
+    def __init__(self, seed, format=None):
+        self.value = self.result = seed
+        if format is None:
+            self.format = lambda self, result: result
+        else:
+            self.format = format
+
+    def __call__(self, *params, **opts):
+        return self.format(self, self.result, *params, **opts)
+
     def __add__(self, other):
         raise NotImplementedError('Does not implement +')
 
@@ -333,7 +348,20 @@ class Piping(object):
         raise NotImplementedError('Does not implement +')
 
     def __int__(self):
-        raise NotImplementedError('Does not implement int')
+        return int(self.result)
 
     def __float__(self):
-        raise NotImplementedError('Does not implement float')
+        raise float(self.result)
+
+
+class ComposePiping(Piping):
+    """Common usage of Piping - the | operator is the simplest possible
+    function composition.
+
+    Most implementations will probably be based of this.
+
+    """
+    def __or__(self, step) -> None:
+        "Bitwise OR as simple function composition"
+        self.result = step(self.result)
+        return self
