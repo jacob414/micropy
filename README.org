@@ -87,8 +87,9 @@ add methods using a decorator notation:
 >>> \
 ... class PipingExample(lang.Piping):
 ...     def __add__(self, value) -> lang.Piping:
-...         self.result = self.result + value
+...         self.queue(lambda a, b: a + b, value)
 ...         return self
+...
 >>> simplest_pipe = PipingExample(10)
 >>> res = simplest_pipe + 10 + 20
 >>> res()

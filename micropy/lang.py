@@ -5,8 +5,9 @@ import funcy
 import types
 import numbers
 from functools import singledispatch
+from functools import lru_cache
 from pysistence import Expando
-from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable
+from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Union
 
 from functools import wraps, update_wrapper
 
@@ -202,19 +203,38 @@ class Piping(object):
 
     The most basic one will simply refuse to do anything - you have to
     give it instructions/permissions on everything it's made for ;-)."""
-    def __init__(self, seed, format=None):
-        self.value = self.result = seed
+    def __init__(self,
+                 seed: Union[tuple, Any],
+                 format: Callable[[Any, None, None], Any] = None):
+        self.cursor = self.seed = tuple(funcy.flatten(() + (seed, )))
         if format is None:
-            self.format = lambda self, result: result
+            self.format = funcy.identity
         else:
             self.format = format
+        self.ops = []
 
-    def fncompose(self, step: Callable[[Any, None, None], Any]) -> 'Piping':
-        self.result = step(self.result)
+    def fncompose(self, step: Callable[[Any, None, None], Any],
+                  x: Any = None) -> 'Piping':
+        self.queue(step, x)
         return self
 
-    def __call__(self, *params, **opts):
-        return self.format(self, self.result, *params, **opts)
+    def queue(self, step: Callable[[Any, Any, None], Any], *x: Any) -> None:
+        "Does queue"
+        cursor = self.cursor  # at time of queue
+        self.ops.append((step, x))
+
+    def run(self, seed, *x: Any) -> None:
+        "Does do"
+        self.cursor = seed
+        for op, x in self.ops:
+            self.cursor = op(*(self.cursor, *funcy.compact(x)))
+        return self.cursor
+
+    @lru_cache(maxsize=1, typed=True)
+    def __call__(self, *params: Any) -> Any:
+        intermediate = self.run(*self.seed)
+        combo = params + (intermediate, )
+        return self.format(*combo)
 
     def __add__(self, other):
         raise NotImplementedError('Does not implement +')
@@ -365,6 +385,6 @@ class ComposePiping(Piping):
     Most implementations will probably be based of this.
 
     """
-    def __or__(self, step) -> None:
+    def __or__(self, stepf: Callable[[Any, None, None], Any]) -> None:
         "Bitwise OR as simple function composition"
-        return self.fncompose(step)
+        return self.fncompose(stepf)

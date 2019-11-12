@@ -7,6 +7,7 @@ from micropy import lang
 from micropy.testing import fixture
 
 from typing import Any
+import operator as ops
 
 
 @pytest.fixture
@@ -169,7 +170,7 @@ def simplest_pipe() -> None:
     class PipingExample(lang.Piping):
         def __add__(self, value) -> None:
             "Does __add__"
-            self.result = self.result + value
+            self.queue(ops.add, value)
             return self
 
     return PipingExample(10)
@@ -195,10 +196,10 @@ def test_piping_as_filter() -> None:
     class Minimum(lang.Piping):
         def __add__(self, value) -> lang.Piping:
             "Add operation"
-            self.result = self.result + value
+            self.queue(ops.add, value)
             return self
 
-    fltr = (Minimum(8, lambda self, result, x: x > 10) + 1 + 1)
+    fltr = (Minimum(8, ops.gt) + 1 + 1)
     assert tuple(filter(fltr, (8, 9, 10, 11, 12))) == (11, 12)
 
 
