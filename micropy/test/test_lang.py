@@ -181,10 +181,10 @@ def test_piping_simplest(simplest_pipe) -> None:
     assert res() == 40
 
 
+@pytest.mark.xfail(raises=NotImplementedError)
 def test_piping_simplest_restrictive(simplest_pipe) -> None:
     "Should piping_simplest_restrictive1"
-    with pytest.raises(NotImplementedError):
-        simplest_pipe + 10 - 20
+    simplest_pipe + 10 - 20
 
 
 def test_piping_as_filter() -> None:
