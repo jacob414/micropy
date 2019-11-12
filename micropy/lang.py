@@ -209,6 +209,10 @@ class Piping(object):
         else:
             self.format = format
 
+    def fncompose(self, step: Callable[[Any, None, None], Any]) -> 'Piping':
+        self.result = step(self.result)
+        return self
+
     def __call__(self, *params, **opts):
         return self.format(self, self.result, *params, **opts)
 
@@ -363,5 +367,4 @@ class ComposePiping(Piping):
     """
     def __or__(self, step) -> None:
         "Bitwise OR as simple function composition"
-        self.result = step(self.result)
-        return self
+        return self.fncompose(step)
