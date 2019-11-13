@@ -204,7 +204,7 @@ class Piping(object):
     The most basic one will simply refuse to do anything - you have to
     give it instructions/permissions on everything it's made for ;-)."""
     def __init__(self,
-                 seed: Union[tuple, Any],
+                 seed: Union[tuple, Any] = (),
                  format: Callable[[Any, None, None], Any] = None):
         self.cursor = self.seed = tuple(funcy.flatten(() + (seed, )))
         if format is None:
