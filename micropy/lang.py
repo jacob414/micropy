@@ -213,15 +213,15 @@ class Piping(object):
             self.format = format
         self.ops = []
 
-    def fncompose(self, step: Callable[[Any, None, None], Any],
+    def fncompose(self, stepf: Callable[[Any, None, None], Any],
                   x: Any = None) -> 'Piping':
-        self.queue(step, x)
+        self.queue(stepf, x)
         return self
 
-    def queue(self, step: Callable[[Any, Any, None], Any], *x: Any) -> None:
+    def queue(self, stepf: Callable[[Any, Any, None], Any], *x: Any) -> None:
         "Does queue"
         cursor = self.cursor  # at time of queue
-        self.ops.append((step, x))
+        self.ops.append((stepf, x))
 
     def run(self, seed, *x: Any) -> None:
         "Does do"
