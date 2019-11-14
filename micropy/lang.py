@@ -8,8 +8,9 @@ from functools import singledispatch
 from functools import lru_cache
 from pysistence import Expando
 from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Union
+import inspect
 
-from functools import wraps, update_wrapper
+from functools import wraps, update_wrapper, reduce
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 
@@ -197,12 +198,24 @@ def mkclass(name: str, bases: Tuple = (), **clsattrs: Any) -> Any:
     return Gen
 
 
+def arity(fn: Callable) -> int:
+    "Does arity"
+    return len(inspect.signature(fn).parameters)
+
+
 class Piping(object):
     """Piping objects is for (ab)using Python operator overloading to
     build small pipeline-DSL's.
 
     The most basic one will simply refuse to do anything - you have to
     give it instructions/permissions on everything it's made for ;-)."""
+
+    stepf_arity = {
+        map: 1,
+        filter: 1,
+        reduce: 2,
+    }
+
     def __init__(self,
                  seed: Union[tuple, Any] = (),
                  format: Callable[[Any, None, None], Any] = None):
@@ -215,6 +228,12 @@ class Piping(object):
 
     def fncompose(self, stepf: Callable[[Any, None, None], Any],
                   x: Any = None) -> 'Piping':
+        operands = arity(stepf)
+        if operands == 1:
+            operand = ()  # only return value from previous step function
+        elif operands == 2:
+            operand = (x, )
+
         self.queue(stepf, x)
         return self
 
@@ -222,19 +241,34 @@ class Piping(object):
         "Does queue"
         cursor = self.cursor  # at time of queue
         self.ops.append((stepf, x))
+        return self
 
+    # @lru_cache(maxsize=1, typed=True)
     def run(self, seed, *x: Any) -> None:
         "Does do"
         self.cursor = seed
-        for op, x in self.ops:
-            self.cursor = op(*(self.cursor, *funcy.compact(x)))
+        for op, operands in self.ops:
+            if operands:
+                self.cursor = op(*(self.cursor, *operands))
+            else:
+                self.cursor = op(self.cursor)
         return self.cursor
 
-    @lru_cache(maxsize=1, typed=True)
     def __call__(self, *params: Any) -> Any:
-        intermediate = self.run(*self.seed)
-        combo = params + (intermediate, )
-        return self.format(*combo)
+        operands = getattr(self, 'seed', params)
+        if not operands:
+            raise ValueError('undeterminable first operands')
+        res = self.run(*operands)
+        # import ipdb
+        # ipdb.set_trace()
+        # pass
+        if params == ():  # map case
+            return self.format(res)
+        else:  # filter case
+            return self.format(*params)
+        # return self.format(intermediate)
+        # return self.format(*params)
+        # return self.format(*combo)
 
     def __add__(self, other):
         raise NotImplementedError('Does not implement +')
@@ -387,4 +421,4 @@ class ComposePiping(Piping):
     """
     def __or__(self, stepf: Callable[[Any, None, None], Any]) -> None:
         "Bitwise OR as simple function composition"
-        return self.fncompose(stepf)
+        return self.queue(stepf)
