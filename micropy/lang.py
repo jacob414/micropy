@@ -229,6 +229,12 @@ class Piping(object):
         self.kind = kind
         self.ops = []
 
+    def sum(self) -> None:
+        "Does show"
+        print(self.__class__.__name__)
+        print(
+            f'seed = {self.seed}, cursor = {self.cursor}, kind = {self.kind}')
+
     def fncompose(self, stepf: Callable[[Any, None, None], Any],
                   x: Any = None) -> 'Piping':
         operands = arity(stepf)
@@ -258,7 +264,15 @@ class Piping(object):
         return self.cursor
 
     def __call__(self, *params: Any) -> Any:
-        operands = getattr(self, 'seed', params)
+        """Treating the Pipe as a function calculates the Pipe's result and
+        returns it passed through the return formatting function.
+
+        Unary calls for pipelined function composition behavoiour,
+        binary calls to combine a value with the result of the pipe
+        operations (map/filter/reduce).
+
+        """
+        operands = params or getattr(self, 'seed', params)
         if not operands:
             raise ValueError('undeterminable first operands')
         res = self.run(*operands)

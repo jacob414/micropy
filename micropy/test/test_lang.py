@@ -199,8 +199,9 @@ def test_piping_as_filter() -> None:
             self.queue(ops.add, value)
             return self
 
-    fltr = (Minimum(8, ops.gt) + 1 + 1)
-    assert tuple(filter(fltr, (8, 9, 10, 11, 12))) == (11, 12)
+    assert tuple(
+        filter((Minimum(8, kind=filter, format=lambda x: x > 10) + 1 + 1),
+               (8, 9, 10, 11, 12))) == (11, 12)  # yapf: ignore
 
 
 def test_piping_as_mapping() -> None:
