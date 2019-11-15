@@ -218,12 +218,15 @@ class Piping(object):
 
     def __init__(self,
                  seed: Union[tuple, Any] = (),
+                 kind: Callable = map,
                  format: Callable[[Any, None, None], Any] = None):
         self.cursor = self.seed = tuple(funcy.flatten(() + (seed, )))
         if format is None:
             self.format = funcy.identity
         else:
             self.format = format
+
+        self.kind = kind
         self.ops = []
 
     def fncompose(self, stepf: Callable[[Any, None, None], Any],
