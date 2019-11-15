@@ -259,10 +259,14 @@ class Piping(object):
         if not operands:
             raise ValueError('undeterminable first operands')
         res = self.run(*operands)
-        # import ipdb
-        # ipdb.set_trace()
-        # pass
-        if params == ():  # map case
+        if self.seed == () and params != () and self.kind is filter:
+            # First run case
+            return self
+        elif self.kind is filter:
+            # Always compares against call parameters
+            res = self.format(*params)
+            return res
+        elif self.kind is map:
             return self.format(res)
         else:  # filter case
             return self.format(*params)
