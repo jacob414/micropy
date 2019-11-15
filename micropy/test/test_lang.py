@@ -164,7 +164,7 @@ def test_xe_as_dict(xe: lang.XE) -> None:
 
 
 @pytest.fixture
-def simplest_pipe() -> None:
+def simplest_pipe() -> lang.Piping:
     "A fixture with a Piping object that only supports add."
 
     class PipingExample(lang.Piping):
