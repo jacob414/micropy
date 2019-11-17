@@ -222,6 +222,7 @@ class Piping(pipelib.BasePiping):
 
         self.kind = kind
         self.ops = []
+        self.last_result = Undefined
 
     def sum(self) -> None:
         "Does show"
@@ -246,7 +247,6 @@ class Piping(pipelib.BasePiping):
         self.ops.append((stepf, x))
         return self
 
-    # @lru_cache(maxsize=1, typed=True)
     def run(self, seed, *x: Any) -> None:
         "Does do"
         self.cursor = seed
@@ -255,6 +255,7 @@ class Piping(pipelib.BasePiping):
                 self.cursor = op(*(self.cursor, *operands))
             else:
                 self.cursor = op(self.cursor)
+        self.last_result = self.cursor
         return self.cursor
 
     def __call__(self, *params: Any) -> Any:
