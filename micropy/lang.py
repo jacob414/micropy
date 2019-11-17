@@ -280,11 +280,9 @@ class Piping(pipelib.BasePiping):
             return res
         elif self.kind is map:
             return self.format(res)
-        else:  # filter case
+        else:
+            # filter case
             return self.format(*params)
-        # return self.format(intermediate)
-        # return self.format(*params)
-        # return self.format(*combo)
 
 
 class ComposePiping(Piping):
