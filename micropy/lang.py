@@ -209,13 +209,6 @@ class Piping(object):
 
     The most basic one will simply refuse to do anything - you have to
     give it instructions/permissions on everything it's made for ;-)."""
-
-    stepf_arity = {
-        map: 1,
-        filter: 1,
-        reduce: 2,
-    }
-
     def __init__(self,
                  seed: Union[tuple, Any] = (),
                  kind: Callable = map,
