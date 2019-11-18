@@ -212,4 +212,4 @@ def test_piping_as_mapping() -> None:
     """
     incr = lambda x: x + 1
     showr = "It is {}!".format
-    assert (lang.ComposePiping(5) | incr | incr | showr)() == "It is 7!"
+    assert (lang.ComposePiping(5) >> incr >> incr >> showr)() == "It is 7!"
