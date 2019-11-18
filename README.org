@@ -104,7 +104,7 @@ composition:
 >>> from micropy import lang
 >>> incr = lambda x: x + 1
 >>> showr = "It is {}!".format
->>> (lang.ComposePiping(5) | incr | incr | showr)()
+>>> (lang.ComposePiping(5) >> incr >> incr >> showr)()
 'It is 7!'
 >>>
 #+END_SRC

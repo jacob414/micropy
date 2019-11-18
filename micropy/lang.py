@@ -14,6 +14,7 @@ from . import pipelib
 from functools import wraps, update_wrapper, reduce
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
+LISTLIKE = {set, list, tuple}
 
 textual = funcy.isa(str)
 numeric = funcy.isa(numbers.Number)
@@ -221,8 +222,9 @@ class Piping(pipelib.BasePiping):
             self.format = format
 
         self.kind = kind
-        self.ops = []
-        self.last_result = Undefined
+        self.ops = ()
+        self.results = {}
+        self.last_result = ()
 
     def sum(self) -> None:
         "Does show"
@@ -244,7 +246,7 @@ class Piping(pipelib.BasePiping):
     def queue(self, stepf: Callable[[Any, Any, None], Any], *x: Any) -> None:
         "Does queue"
         cursor = self.cursor  # at time of queue
-        self.ops.append((stepf, x))
+        self.ops = (*self.ops, ((stepf, x)))
         return self
 
     def run(self, seed, *x: Any) -> None:
@@ -255,7 +257,7 @@ class Piping(pipelib.BasePiping):
                 self.cursor = op(*(self.cursor, *operands))
             else:
                 self.cursor = op(self.cursor)
-        self.last_result = self.cursor
+        self.last_result = self.results[self.cursor] = self.cursor
         return self.cursor
 
     def __call__(self, *params: Any) -> Any:
@@ -267,18 +269,30 @@ class Piping(pipelib.BasePiping):
         operations (map/filter/reduce).
 
         """
+
         operands = params or getattr(self, 'seed', params)
+
+        # collect - calc start values (calc)
         if not operands:
-            raise ValueError('undeterminable first operands')
+            raise ValueError('undeterminable operands')
+
+        # Now we have a case to put forward
+        case = operands + self.ops + (self.kind, )
+
+        # Execute - pipe start values to queue
         res = self.run(*operands)
-        if self.seed == () and params != () and self.kind is filter:
-            # First run case
-            return self
+        # Cache on sucess (calc+op)
+        self.results[case] = res
+
+        # decide on return & format return (calc+op)
+        if self.last_result != () and params != () and self.kind is not filter:
+            # A result exists, params exists, send _result_ to format fn
+            return self.format(res)
         elif self.kind is filter:
             # Always compares against call parameters
             res = self.format(*params)
             return res
-        elif self.kind is map:
+        elif self.kind is map or self.kind == 'pipe':
             return self.format(res)
         else:
             # filter case
@@ -292,6 +306,6 @@ class ComposePiping(Piping):
     Most implementations will probably be based of this.
 
     """
-    def __or__(self, stepf: Callable[[Any, None, None], Any]) -> None:
+    def __rshift__(self, stepf: Callable[[Any, None, None], Any]) -> None:
         "Bitwise OR as simple function composition"
         return self.queue(stepf)
