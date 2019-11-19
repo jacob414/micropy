@@ -206,10 +206,19 @@ def test_piping_as_filter(fpipe: FilterPipeExample) -> None:
     formattting function is specified.
 
     """
-    import ipdb
-    ipdb.set_trace()
-    pass
-    res = tuple(filter((fpipe + 1 + 1), (8, 9, 10, 11, 12)))
+    fpipe + 1
+    assert fpipe.state == 'fresh'
+    res0 = fpipe(8)
+    assert fpipe.state == 'post first run'
+    assert res0 is False
+    assert fpipe.last_result == 9
+    fpipe + 1
+    res1 = fpipe(9)
+    assert res1 is False
+    assert fpipe(8) is False
+    assert fpipe.last_result == 10
+    assert fpipe.state == 'post first run'
+    res = tuple(filter(fpipe, (8, 9, 10, 11, 12)))
     assert res == (11, 12)
 
 
