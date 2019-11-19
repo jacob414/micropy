@@ -229,8 +229,10 @@ class Piping(pipelib.BasePiping):
     def sum(self) -> None:
         "Does show"
         print(self.__class__.__name__)
-        print(
-            f'seed = {self.seed}, cursor = {self.cursor}, kind = {self.kind}')
+        textual = (
+            f'seed = {self.seed}, cursor = {self.cursor}, kind = {self.kind}, last result = {self.last_result}'
+        )
+        print(textual)
 
     def fncompose(self, stepf: Callable[[Any, None, None], Any],
                   x: Any = None) -> 'Piping':
