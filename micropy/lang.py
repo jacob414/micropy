@@ -262,6 +262,28 @@ class Piping(pipelib.BasePiping):
         self.last_result = self.results[self.cursor] = self.cursor
         return self.cursor
 
+    @property
+    def state(self):
+        if self.seed == () and self.cursor == () and self.last_result == ():
+            return 'fresh'
+        elif self.last_result != ():
+            return 'post first run'
+        else:
+            return 'late'
+
+    def calc_fmt_param(self, res, params, case, kind):
+        if res != () and params != () and kind is not filter:
+            # A result exists, params exists, send _result_ to format fn
+            return (res, )
+        elif self.kind is filter:
+            # Always compares against call parameters
+            return params
+        elif kind is map or kind == 'pipe':
+            return (res, )
+        else:
+            # filter case
+            return params
+
     def __call__(self, *params: Any) -> Any:
         """Treating the Pipe as a function calculates the Pipe's result and
         returns it passed through the return formatting function.
@@ -287,18 +309,8 @@ class Piping(pipelib.BasePiping):
         self.results[case] = res
 
         # decide on return & format return (calc+op)
-        if self.last_result != () and params != () and self.kind is not filter:
-            # A result exists, params exists, send _result_ to format fn
-            return self.format(res)
-        elif self.kind is filter:
-            # Always compares against call parameters
-            res = self.format(*params)
-            return res
-        elif self.kind is map or self.kind == 'pipe':
-            return self.format(res)
-        else:
-            # filter case
-            return self.format(*params)
+        outp = self.calc_fmt_param(res, params, case, self.kind)
+        return self.format(*outp)
 
 
 class ComposePiping(Piping):
