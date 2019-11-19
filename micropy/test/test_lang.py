@@ -167,13 +167,13 @@ def test_xe_as_dict(xe: lang.XE) -> None:
 def simplest_pipe() -> lang.Piping:
     "A fixture with a Piping object that only supports add."
 
-    class PipingExample(lang.Piping):
+    class SimplestPipe(lang.Piping):
         def __add__(self, value) -> None:
             "Does __add__"
             self.queue(ops.add, value)
             return self
 
-    return PipingExample(10)
+    return SimplestPipe(10)
 
 
 def test_piping_simplest(simplest_pipe) -> None:
@@ -188,20 +188,29 @@ def test_piping_simplest_restrictive(simplest_pipe) -> None:
     simplest_pipe + 10 - 20
 
 
-def test_piping_as_filter() -> None:
+class FilterPipeExample(lang.Piping):
+    def __add__(self, value) -> lang.Piping:
+        "Add operation"
+        self.queue(ops.add, value)
+        return self
+
+
+@pytest.fixture
+def fpipe() -> None:
+    "Does fpipe"
+    return FilterPipeExample(8, kind=filter, format=lambda x: x > 10)
+
+
+def test_piping_as_filter(fpipe: FilterPipeExample) -> None:
     """Piping object should be able to work as filters provided a
     formattting function is specified.
 
     """
-    class Minimum(lang.Piping):
-        def __add__(self, value) -> lang.Piping:
-            "Add operation"
-            self.queue(ops.add, value)
-            return self
-
-    assert tuple(
-        filter((Minimum(8, kind=filter, format=lambda x: x > 10) + 1 + 1),
-               (8, 9, 10, 11, 12))) == (11, 12)  # yapf: ignore
+    import ipdb
+    ipdb.set_trace()
+    pass
+    res = tuple(filter((fpipe + 1 + 1), (8, 9, 10, 11, 12)))
+    assert res == (11, 12)
 
 
 def test_piping_as_mapping() -> None:
