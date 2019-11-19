@@ -215,22 +215,29 @@ class Piping(pipelib.BasePiping):
                  seed: Union[tuple, Any] = (),
                  kind: Callable = map,
                  format: Callable[[Any, None, None], Any] = None):
-        self.cursor = self.seed = tuple(funcy.flatten(() + (seed, )))
+        self.cursor = ()
+        self.ops = ()
+        self.results = {}
+        self.last_result = ()
+
+        if not funcy.is_seqcont(seed):
+            self.seed = (seed, )
+        else:
+            self.seed = seed
+
+        # self.seed = tuple(funcy.flatten(() + (seed, )))
         if format is None:
             self.format = funcy.identity
         else:
             self.format = format
 
         self.kind = kind
-        self.ops = ()
-        self.results = {}
-        self.last_result = ()
 
     def sum(self) -> None:
         "Does show"
         print(self.__class__.__name__)
         textual = (
-            f'seed = {self.seed}, cursor = {self.cursor}, kind = {self.kind}, last result = {self.last_result}'
+            f'kind = {self.kind}, state = {self.state}, seed = {self.seed}, cursor = {self.cursor}, last result = {self.last_result}'
         )
         print(textual)
 
@@ -264,7 +271,7 @@ class Piping(pipelib.BasePiping):
 
     @property
     def state(self):
-        if self.seed == () and self.cursor == () and self.last_result == ():
+        if self.cursor == () and self.last_result == ():
             return 'fresh'
         elif self.last_result != ():
             return 'post first run'
@@ -275,6 +282,12 @@ class Piping(pipelib.BasePiping):
         if res != () and params != () and kind is not filter:
             # A result exists, params exists, send _result_ to format fn
             return (res, )
+        elif self.kind is filter and self.state == 'fresh':
+            return (res, )
+        elif self.kind is filter and self.state == 'post first run':
+            print(self.sum())
+            # return params  # unit happy
+            return (res, )  # lab  happy
         elif self.kind is filter:
             # Always compares against call parameters
             return params
@@ -294,7 +307,7 @@ class Piping(pipelib.BasePiping):
 
         """
 
-        operands = params or getattr(self, 'seed', params)
+        operands = getattr(self, 'seed', params)
 
         # collect - calc start values (calc)
         if not operands:
