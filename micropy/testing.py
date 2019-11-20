@@ -3,9 +3,12 @@
 
 import sys
 import io
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, Mapping, Callable
 
 import distutils.cmd
+
+import functools
+from contextlib import contextmanager
 
 import funcy  # type: ignore
 import pytest  # type: ignore
@@ -23,6 +26,47 @@ class fixture(object):
     def params(namelist: str, *values: Any) -> Any:
         "Does params"
         return pytest.mark.parametrize(namelist, values)
+
+
+def logcall(fn: Callable, realname: str = None) -> Callable:
+    "A simple composition that will log parameters an results."
+
+    @functools.wraps(fn)
+    def _(*args: Any, **kwargs: Mapping[Any, Any]) -> Any:
+        "Function logger, will log if enclosing functions is turned on"
+        on = logcall._enabled
+        try:
+            name = realname or fn.__name__
+            if kwargs:
+                desc = f'{name}({args}, {kwargs}'
+            else:
+                desc = desc = f'{name}({args})'
+            if on:
+                print(desc)
+            ret = fn(*args, **kwargs)
+            if on:
+                print(f'  -> {ret}')
+            return ret
+        except Exception as exc:
+            if on:
+                print(f'  ..raised {exc}')
+            raise
+
+    @contextmanager
+    def on():
+        logcall._enabled = True
+        try:
+            yield
+        except Exception as exc:
+            raise
+        finally:
+            logcall._enabled = False
+
+        logcall._enabled = False
+
+    logcall.on = on
+    logcall._enabled = False
+    return _
 
 
 class ReviewProject(distutils.cmd.Command):
