@@ -205,6 +205,9 @@ def arity(fn: Callable) -> int:
     return len(inspect.signature(fn).parameters)
 
 
+always_tup = funcy.iffy(funcy.complement(funcy.is_seqcont), lambda x: (x, ))
+
+
 class Piping(pipelib.BasePiping):
     """Piping objects is for (ab)using Python operator overloading to
     build small pipeline-DSL's.
@@ -241,6 +244,10 @@ class Piping(pipelib.BasePiping):
         )
         print(textual)
 
+    @property
+    def now(self):
+        return self.last_result
+
     def fncompose(self, stepf: Callable[[Any, None, None], Any],
                   x: Any = None) -> 'Piping':
         operands = arity(stepf)
@@ -266,7 +273,7 @@ class Piping(pipelib.BasePiping):
                 self.cursor = op(*(self.cursor, *operands))
             else:
                 self.cursor = op(self.cursor)
-        self.last_result = self.results[self.cursor] = self.cursor
+        self.last_result = self.results[self.cursor] = always_tup(self.cursor)
         return self.cursor
 
     @property

@@ -4,7 +4,7 @@
 import pytest
 
 from micropy import lang
-from micropy.testing import fixture
+from micropy.testing import fixture, logcall
 
 from typing import Any
 import operator as ops
@@ -195,31 +195,38 @@ class FilterPipeExample(lang.Piping):
         return self
 
 
-@pytest.fixture
-def fpipe() -> None:
-    "Does fpipe"
-    return FilterPipeExample(8, kind=filter, format=lambda x: x > 10)
-
-
-def test_piping_as_filter(fpipe: FilterPipeExample) -> None:
+@fixture.params("fpipe, param, want",
+  (FilterPipeExample(8,
+                     kind=filter,
+                     format=logcall(lambda x: x > 10, 'over10')),
+   (8, 9, 10, 11, 12),
+   (11,12)
+))  # yapf: disable
+def test_piping_as_filter(fpipe: FilterPipeExample, param: tuple,
+                          want: tuple) -> None:
     """Piping object should be able to work as filters provided a
     formattting function is specified.
 
     """
-    fpipe + 1
-    assert fpipe.state == 'fresh'
-    res0 = fpipe(8)
-    assert fpipe.state == 'post first run'
-    assert res0 is False
-    assert fpipe.last_result == 9
-    fpipe + 1
-    res1 = fpipe(9)
-    assert res1 is False
-    assert fpipe(8) is False
-    assert fpipe.last_result == 10
-    assert fpipe.state == 'post first run'
-    res = tuple(filter(fpipe, (8, 9, 10, 11, 12)))
-    assert res == (11, 12)
+    # fpipe, = fpipe
+    # import ipdb
+    # ipdb.set_trace()
+    # pass
+    with logcall.on():
+        fpipe + 1
+        assert fpipe.state == 'fresh'
+        res0 = fpipe(8)
+        assert fpipe.state == 'post first run'
+        assert res0 is False
+        assert fpipe.now == (9, )
+        fpipe + 1
+        res1 = fpipe(9)
+        assert res1 is False
+        assert fpipe(8) is False
+        assert fpipe.now == (10, )
+        assert fpipe.state == 'post first run'
+        was = tuple(filter(fpipe, param))
+        assert was == want
 
 
 def test_piping_as_mapping() -> None:
