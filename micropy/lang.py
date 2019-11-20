@@ -201,7 +201,7 @@ def mkclass(name: str, bases: Tuple = (), **clsattrs: Any) -> Any:
 
 
 def arity(fn: Callable) -> int:
-    "Does arity"
+    "Returns the number of arguments required by `fn`."
     return len(inspect.signature(fn).parameters)
 
 
@@ -214,27 +214,27 @@ class Piping(pipelib.BasePiping):
 
     The most basic one will simply refuse to do anything - you have to
     give it instructions/permissions on everything it's made for ;-)."""
+    class Fresh(object):
+        "Marker for Piping instances that never has been run"
+        pass
+
+    class Executed(object):
+        "Marker for Piping instances that has been run"
+        pass
+
     def __init__(self,
                  seed: Union[tuple, Any] = (),
                  kind: Callable = map,
-                 format: Callable[[Any, None, None], Any] = None):
+                 format: Callable[[Any, None, None], Any] = funcy.identity):
         self.cursor = ()
         self.ops = ()
         self.results = {}
         self.last_result = ()
 
-        if not funcy.is_seqcont(seed):
-            self.seed = (seed, )
-        else:
-            self.seed = seed
-
-        # self.seed = tuple(funcy.flatten(() + (seed, )))
-        if format is None:
-            self.format = funcy.identity
-        else:
-            self.format = format
-
+        self.format = format
         self.kind = kind
+
+        self.seed = always_tup(seed)
 
     def sum(self) -> None:
         "Does show"
@@ -273,36 +273,29 @@ class Piping(pipelib.BasePiping):
                 self.cursor = op(*(self.cursor, *operands))
             else:
                 self.cursor = op(self.cursor)
-        self.last_result = self.results[self.cursor] = always_tup(self.cursor)
         return self.cursor
 
     @property
     def state(self):
         if self.cursor == () and self.last_result == ():
-            return 'fresh'
+            return Piping.Fresh
         elif self.last_result != ():
-            return 'post first run'
-        else:
-            return 'late'
+            return Piping.Executed
 
-    def calc_fmt_param(self, res, params, case, kind):
-        if res != () and params != () and kind is not filter:
-            # A result exists, params exists, send _result_ to format fn
+        raise ValueError('Piping: undeterminable state')
+
+    def calc_fmt_param(self, kind, res, params, case):
+        # case = (self.kind, ) + self.seed + self.ops
+        if kind is filter and self.state == Piping.Fresh:
+            # This case is logically obsolete but good for readability.
             return (res, )
-        elif self.kind is filter and self.state == 'fresh':
-            return (res, )
-        elif self.kind is filter and self.state == 'post first run':
-            print(self.sum())
-            # return params  # unit happy
-            return (res, )  # lab  happy
         elif self.kind is filter:
             # Always compares against call parameters
             return params
         elif kind is map or kind == 'pipe':
             return (res, )
-        else:
-            # filter case
-            return params
+
+        raise TypeError('Piping: unknown out parameter scenario')
 
     def __call__(self, *params: Any) -> Any:
         """Treating the Pipe as a function calculates the Pipe's result and
@@ -314,28 +307,45 @@ class Piping(pipelib.BasePiping):
 
         """
 
-        operands = getattr(self, 'seed', params)
+        # Calculate case
+        case = (self.kind, ) + self.seed + self.ops
 
-        # collect - calc start values (calc)
+        # Decide on operands for this run
+        if self.state == Piping.Fresh:
+            # When the pipeline must be run, prefer parameter but
+            # otherwise seed
+            operands = params or self.seed
+        else:
+            # When a result exist, prefer seed
+            operands = self.seed or params
+
+        # An incorrectly handled pipe is a possibility here
         if not operands:
-            raise ValueError('undeterminable operands')
+            raise ValueError('Piping: fatal/undeterminable operands')
 
-        # Now we have a case to put forward
-        case = operands + self.ops + (self.kind, )
+        try:
+            # Stored, grab this case from results storage
+            res = self.results[case]
+        except KeyError:
+            # This case has not been stored yet
+            res = self.run(*operands)
 
-        # Execute - pipe start values to queue
-        res = self.run(*operands)
-        # Cache on sucess (calc+op)
-        self.results[case] = res
+            # On success:
+            # Store last result in tuple form
+            self.last_result = always_tup(res)
+            # Also store the Piping case.
+            self.results[case] = res
 
-        # decide on return & format return (calc+op)
-        outp = self.calc_fmt_param(res, params, case, self.kind)
-        return self.format(*outp)
+        # Decide on return format
+        format_params = self.calc_fmt_param(self.kind, res, params, case)
+        # Invoke return format function with parameter(s) from above
+        return self.format(*format_params)
 
 
 class ComposePiping(Piping):
-    """Common usage of Piping - the | operator is the simplest possible
-    function composition.
+    """Common usage of Piping - the >> operator is the simplest possible
+    function composition. I decided against the | operator since it's
+    needed for logical pipes.
 
     Most implementations will probably be based of this.
 

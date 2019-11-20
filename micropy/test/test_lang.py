@@ -195,38 +195,28 @@ class FilterPipeExample(lang.Piping):
         return self
 
 
+filter_from_8 = lambda: (FilterPipeExample(
+    8, kind=filter, format=logcall(lambda x: x > 10, 'over10')) + 1 + 1)
+
+
 @fixture.params("fpipe, param, want",
-  (FilterPipeExample(8,
-                     kind=filter,
-                     format=logcall(lambda x: x > 10, 'over10')),
+   (filter_from_8(),
    (8, 9, 10, 11, 12),
    (11,12)
 ))  # yapf: disable
-def test_piping_as_filter(fpipe: FilterPipeExample, param: tuple,
-                          want: tuple) -> None:
+def test_piping_as_filter_simple(fpipe: FilterPipeExample, param: tuple,
+                                 want: tuple) -> None:
     """Piping object should be able to work as filters provided a
     formattting function is specified.
 
     """
-    # fpipe, = fpipe
-    # import ipdb
-    # ipdb.set_trace()
-    # pass
-    with logcall.on():
-        fpipe + 1
-        assert fpipe.state == 'fresh'
-        res0 = fpipe(8)
-        assert fpipe.state == 'post first run'
-        assert res0 is False
-        assert fpipe.now == (9, )
-        fpipe + 1
-        res1 = fpipe(9)
-        assert res1 is False
-        assert fpipe(8) is False
-        assert fpipe.now == (10, )
-        assert fpipe.state == 'post first run'
-        was = tuple(filter(fpipe, param))
-        assert was == want
+    was = tuple(filter(fpipe, param))
+    assert was == want
+
+
+def test_more_filter() -> None:
+    "Should more_filter"
+    pass
 
 
 def test_piping_as_mapping() -> None:
