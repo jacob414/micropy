@@ -213,7 +213,9 @@ class Piping(pipelib.BasePiping):
     build small pipeline-DSL's.
 
     The most basic one will simply refuse to do anything - you have to
-    give it instructions/permissions on everything it's made for ;-)."""
+    give it instructions/permissions on everything it's made for ;-).
+
+    """
     class Fresh(object):
         "Marker for Piping instances that never has been run"
         pass
