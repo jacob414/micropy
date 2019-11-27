@@ -355,3 +355,9 @@ class ComposePiping(Piping):
     def __rshift__(self, stepf: Callable[[Any, None, None], Any]) -> None:
         "Bitwise OR as simple function composition"
         return self.queue(stepf)
+
+
+class typemap(dict):
+    def __call__(self, obj) -> Any:
+        "Return the value keyed by the type of parameter `obj`"
+        return self[type(obj)]
