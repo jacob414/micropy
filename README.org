@@ -108,3 +108,15 @@ composition:
 'It is 7!'
 >>>
 #+END_SRC
+
+** 'Call by type' convenience objects
+
+#+BEGIN_SRC python
+>>> from micropy import lang
+>>> foo = lang.callbytype({int: lambda x: x*100, str: lambda x: f'Hello {x}'})
+>>> foo(10)
+1000
+>>> foo('bar')
+'Hello bar'
+>>>
+#+END_SRC

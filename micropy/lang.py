@@ -7,7 +7,7 @@ import numbers
 from functools import singledispatch
 from functools import lru_cache
 from pysistence import Expando
-from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Union
+from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Optional, Union
 import inspect
 from . import pipelib
 
@@ -310,7 +310,7 @@ class Piping(pipelib.BasePiping):
         """
 
         # Calculate case
-        case = (self.kind, ) + self.seed + self.ops
+        case = (self.kind, ) + self.seed + self.ops + params
 
         # Decide on operands for this run
         if self.state == Piping.Fresh:
@@ -357,7 +357,18 @@ class ComposePiping(Piping):
         return self.queue(stepf)
 
 
-class typemap(dict):
-    def __call__(self, obj) -> Any:
+class callbytype(dict):
+    """Crue type match and extractor:
+
+    Define a mapping of types. Call for an instance, the parameter
+    type should be mapped by `type(obj)` returning a callable that
+    will further process the instance.
+
+    """
+    def __call__(self, *params: Any,
+                 **opts: Any) -> Union[Iterable[Any], Iterable]:
         "Return the value keyed by the type of parameter `obj`"
-        return self[type(obj)]
+        instance = params[0]
+        T = type(instance)
+
+        return self[T](instance, *params[1:], **opts)
