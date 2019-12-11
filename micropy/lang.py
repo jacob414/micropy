@@ -424,6 +424,7 @@ class LogicPiping(Piping):
         return self.queue(gate)
 
     def __call__(self, *params: Any) -> Any:
+        self.truthy = []
         super().__call__(*params)
         passed = funcy.compact(self.truthy)
         if len(passed) == self.conjunctions:
