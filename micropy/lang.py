@@ -371,11 +371,29 @@ class CountPiping(Piping):
 
 
 def PNot(value_or_stepf: Union[Callable, Any]) -> bool:
+    "Unary negate for `LogicPiping`."
     if callable(value_or_stepf):
         stepf = value_or_stepf
     else:
         stepf = funcy.identity
     return funcy.complement(stepf)
+
+
+def P_has(idx: Union[str, Any]) -> Callable[[Any, None, None], Any]:
+    "Does PHas"
+
+    # XXX should be able to reuse `dig.xget()`
+
+    def anyhas(obj: Any) -> Union[bool, Any]:
+        try:
+            return hasattr(obj, idx)
+        except AttributeError:
+            try:
+                return obj[idx]
+            except IndexError:
+                return False
+
+    return anyhas
 
 
 rcurry = funcy.rcurry

@@ -231,9 +231,10 @@ def test_piping_as_mapping() -> None:
     assert (lang.ComposePiping(5) >> incr >> incr >> showr)() == "It is 7!"
 
 
-has = lambda n: lambda o: hasattr(o, n)
 got_a, got_b, none = E(a=1), E(b=1), E(c=1)
 got_ab, got_bc = E(a=1, b=1), E(b=1, c=1)
+
+has = lang.P_has
 
 only_a = lambda: lang.LogicPiping() // has('a')
 a_and_b = lambda: lang.LogicPiping() // has('a') & has('b')
