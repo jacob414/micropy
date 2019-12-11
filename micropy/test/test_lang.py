@@ -8,6 +8,7 @@ from micropy.testing import fixture, logcall
 
 from typing import Any
 import operator as ops
+from altered import E
 
 
 @pytest.fixture
@@ -228,3 +229,41 @@ def test_piping_as_mapping() -> None:
     incr = lambda x: x + 1
     showr = "It is {}!".format
     assert (lang.ComposePiping(5) >> incr >> incr >> showr)() == "It is 7!"
+
+
+has = lambda n: lambda o: hasattr(o, n)
+got_a, got_b, none = E(a=1), E(b=1), E(c=1)
+got_ab, got_bc = E(a=1, b=1), E(b=1, c=1)
+
+only_a = lambda: lang.LogicPiping() // has('a')
+a_and_b = lambda: lang.LogicPiping() // has('a') & has('b')
+either = lambda: lang.LogicPiping() // has('a') | has('b')
+a_or_b = lambda: lang.LogicPiping() // has('a') | has('b')
+
+
+class LogicAndCount(lang.CountPiping, lang.LogicPiping):
+    pass
+
+
+@fixture.params(
+    "lpipe, param, want",
+    (only_a(), got_a, got_a),
+    (only_a(), got_bc, False),
+    (a_or_b(), got_a, got_a),
+    (either(), got_b, got_b),
+    (a_or_b(), got_bc, got_bc),
+    (a_and_b(), got_bc, False),
+    (lang.LogicPiping() // has('a') & lang.PNot(has('b')), got_ab, False),
+    (LogicAndCount(format=bool) + 1 >= 2, 1, True),
+    (LogicAndCount(format=bool) + 1 >= 3, 1, False),
+    (LogicAndCount(format=bool) + 1 > 1, 1, True),
+    (LogicAndCount(format=bool) + 1 > 1, 1, True),
+    (LogicAndCount(format=bool) + 1 == 2, 1, True),
+    (LogicAndCount(format=bool) + 1 == 3, 1, False),
+    (LogicAndCount(format=bool) + 1 != 2, 1, False),
+    (LogicAndCount(format=bool) + 1 != 3, 1, True),
+    (LogicAndCount(format=bool) + 1 & lang.PNot(2), 1, False),
+)
+def test_logic_piping(lpipe, param, want) -> None:
+    "Should logic_piping"
+    assert lpipe(param) == want

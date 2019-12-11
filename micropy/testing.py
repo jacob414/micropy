@@ -57,7 +57,7 @@ def logcall(fn: Callable, realname: str = None) -> Callable:
         logcall._enabled = True
         try:
             yield
-        except Exception as exc:
+        except Exception:
             raise
         finally:
             logcall._enabled = False

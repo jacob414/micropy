@@ -5,13 +5,15 @@ import funcy
 import types
 import numbers
 from functools import singledispatch
-from functools import lru_cache
 from pysistence import Expando
-from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Optional, Union
+from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Union
 import inspect
 from . import pipelib
+import itertools
 
-from functools import wraps, update_wrapper, reduce
+from functools import wraps, update_wrapper
+
+import operator as ops
 
 PRIMTYPES = {int, bool, float, str, set, list, tuple, dict}
 LISTLIKE = {set, list, tuple}
@@ -252,18 +254,11 @@ class Piping(pipelib.BasePiping):
 
     def fncompose(self, stepf: Callable[[Any, None, None], Any],
                   x: Any = None) -> 'Piping':
-        operands = arity(stepf)
-        if operands == 1:
-            operand = ()  # only return value from previous step function
-        elif operands == 2:
-            operand = (x, )
-
         self.queue(stepf, x)
         return self
 
     def queue(self, stepf: Callable[[Any, Any, None], Any], *x: Any) -> None:
         "Does queue"
-        cursor = self.cursor  # at time of queue
         self.ops = (*self.ops, ((stepf, x)))
         return self
 
@@ -355,6 +350,98 @@ class ComposePiping(Piping):
     def __rshift__(self, stepf: Callable[[Any, None, None], Any]) -> None:
         "Bitwise OR as simple function composition"
         return self.queue(stepf)
+
+
+class CountPiping(Piping):
+    def __add__(self, value) -> Piping:
+        "Add operation"
+        return self.queue(ops.add, value)
+
+    def __sub__(self, value) -> Piping:
+        "Add operation"
+        return self.queue(ops.sub, value)
+
+    def __mul__(self, value) -> Piping:
+        "Add operation"
+        return self.queue(ops.mul, value)
+
+    def __div__(self, value) -> Piping:
+        "Add operation"
+        return self.queue(ops.div, value)
+
+
+def PNot(value_or_stepf: Union[Callable, Any]) -> bool:
+    if callable(value_or_stepf):
+        stepf = value_or_stepf
+    else:
+        stepf = funcy.identity
+    return funcy.complement(stepf)
+
+
+rcurry = funcy.rcurry
+
+
+class LogicPiping(Piping):
+    def __init__(self,
+                 seed: Union[tuple, Any] = (),
+                 kind: Callable = map,
+                 format: Callable[[Any, None, None], Any] = funcy.identity):
+        "Sensible default, override for advanced use."
+        super().__init__(seed, kind, format)
+        self.conjunctions = 0
+
+    def logically(self, stepf, conjunction):
+        self.counter = itertools.count(1)
+        self.truthy = []
+        if conjunction:
+            self.conjunctions += 1
+
+        def gate(x):
+            if stepf(x):
+                self.truthy.append(x)
+            else:
+                self.truthy.append(False)
+            return x
+
+        return self.queue(gate)
+
+    def __call__(self, *params: Any) -> Any:
+        super().__call__(*params)
+        passed = funcy.compact(self.truthy)
+        if len(passed) == self.conjunctions:
+            return self.format(passed[-1])
+        else:
+            return False
+
+    def __eq__(self, value) -> None:
+        "Does __ge__"
+        return self.logically(rcurry(ops.eq)(value), True)
+
+    def __neg__(self, stepf) -> None:
+        "Does __ge__"
+        return self.logically(funcy.complement(stepf), False)
+
+    def __ne__(self, value) -> None:
+        "Does __ge__"
+        return self.logically(rcurry(ops.ne)(value), True)
+
+    def __ge__(self, value) -> None:
+        "Does __ge__"
+        return self.logically(rcurry(ops.ge)(value), True)
+
+    def __gt__(self, value) -> None:
+        "Does __ge__"
+        return self.logically(rcurry(ops.gt)(value), True)
+
+    def __and__(self, stepf: Callable[[Any, None, None], Any]) -> Piping:
+        return self.logically(stepf, True)
+
+    def __floordiv__(self, stepf: Callable[[Any, None, None], Any]) -> Piping:
+        "Aestetics only."
+        return self.__and__(stepf)
+
+    def __or__(self, stepf: Callable[[Any, None, None], Any]) -> Piping:
+        return self.logically(stepf, False)
 
 
 class callbytype(dict):
