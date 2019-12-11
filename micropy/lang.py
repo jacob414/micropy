@@ -406,11 +406,11 @@ class LogicPiping(Piping):
                  format: Callable[[Any, None, None], Any] = funcy.identity):
         "Sensible default, override for advanced use."
         super().__init__(seed, kind, format)
+        self.truthy = []
         self.conjunctions = 0
 
     def logically(self, stepf, conjunction):
         self.counter = itertools.count(1)
-        self.truthy = []
         if conjunction:
             self.conjunctions += 1
 
