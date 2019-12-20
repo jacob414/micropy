@@ -230,15 +230,19 @@ class Piping(pipelib.BasePiping):
                  seed: Union[tuple, Any] = (),
                  kind: Callable = map,
                  format: Callable[[Any, None, None], Any] = funcy.identity):
-        self.cursor = ()
-        self.ops = ()
-        self.results = {}
-        self.last_result = ()
-
+        "Initialize a new Piping object."
+        self.reset()
         self.format = format
         self.kind = kind
 
         self.seed = always_tup(seed)
+
+    def reset(self):
+        "Restart this Piping object as if it were new."
+        self.cursor = ()
+        self.ops = ()
+        self.results = {}
+        self.last_result = ()
 
     def sum(self) -> None:
         "Does show"
