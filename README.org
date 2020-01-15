@@ -80,6 +80,39 @@ add methods using a decorator notation:
 >>>
 #+END_SRC
 
+*** micropy module with developer convenience tools
+
+The =micropy.microscope= module contains utilities that aid
+development. It have to ways to inspect live objects:
+
+**** Via 'AbneuYAML'
+
+/AbneuYAML/ is "Almost, but not entirely unilke YAML". Objects dumped
+to 'AbneuYAML' should be easy to get a visual overview of for humans.
+
+To dump any object:
+
+#+BEGIN_SRC python
+>>> from micropy import microscope
+>>> class Cls: pass
+...
+>>> c = Cls()
+>>> c.foo, c.bar = 1, 2
+>>> c.sub = Cls()
+>>> c.sub.foo, c.sub.bar, c.sub.baz = 3, 4, [1, 2]
+>>> encoded = microscope.abneuyaml(c)
+>>> print(encoded) #doctest: +ELLIPSIS
+<__main__.Cls object at 0x...>:Cls
+  foo=1:int
+  bar=2:int
+  sub=<__main__.Cls object at 0x...>:Cls
+    foo=3:int
+    bar=4:int
+    baz=[1, 2]:list
+>>>
+#+END_SRC
+
+
 ** A simple way of creating small DSL's using Python operator overloading.
 
 #+BEGIN_SRC python
