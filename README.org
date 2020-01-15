@@ -41,7 +41,7 @@ foop=2:int
 #+END_SRC
 
 
-** Programmatic class creation
+*** Programmatic class creation
 
 Programmatic creation of arbitrary named classes in module definition,
 add methods using a decorator notation:
