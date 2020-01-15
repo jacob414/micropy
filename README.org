@@ -83,12 +83,13 @@ add methods using a decorator notation:
 *** micropy module with developer convenience tools
 
 The =micropy.microscope= module contains utilities that aid
-development. It have to ways to inspect live objects:
+development. It has to ways to inspect live objects:
+
 
 **** Via 'AbneuYAML'
 
-/AbneuYAML/ is "Almost, but not entirely unilke YAML". Objects dumped
-to 'AbneuYAML' should be easy to get a visual overview of for humans.
+AbneuYAML is /“Almost, but not entirely unlike YAML”/. Objects dumped
+to ‘AbneuYAML’ should be easy to get a visual overview of for humans.
 
 To dump any object:
 
