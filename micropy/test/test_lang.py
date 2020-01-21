@@ -268,3 +268,26 @@ class LogicAndCount(lang.CountPiping, lang.LogicPiping):
 def test_logic_piping(lpipe, param, want) -> None:
     "Should logic_piping"
     assert lpipe(param) == want
+
+
+def dispr() -> lang.callbytype:
+    "Does dispr"
+
+    disp = lang.callbytype({int: lambda x: x + 1})
+
+    @disp.put
+    def add_two_int(self, a: int, b: int) -> int:
+        "Fixture function: called with 2 integers, should add the integers."
+        return a + b
+
+    return disp
+
+
+@pytest.mark.wbox
+@fixture.params("disp, params, expected",
+  (dispr(), (1, ), 2),
+  (dispr(), (1, 2), 3),
+)  # yapf: disable
+def test_callbytype_variants(disp, params, expected) -> None:
+    "Should dispatch calls to correct function based on instance types."
+    assert disp(*params) == expected

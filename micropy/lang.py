@@ -475,10 +475,26 @@ class callbytype(dict):
     will further process the instance.
 
     """
+    def put(*params: Any) -> Callable:
+        """Decorator to add a function. The types of the parameters. The types
+        that will be matched is taken from the signature of the
+        decorated function.
+
+        """
+        self, fn = params
+        disp = tuple(arg.annotation
+                     for arg in inspect.signature(fn).parameters.values())[1:]
+
+        self[disp] = fn
+
+        return fn
+
     def __call__(self, *params: Any,
                  **opts: Any) -> Union[Iterable[Any], Iterable]:
         "Return the value keyed by the type of parameter `obj`"
-        instance = params[0]
-        T = type(instance)
 
-        return self[T](instance, *params[1:], **opts)
+        T = tuple(type(p) for p in params)
+        if len(T) == 1:
+            return self[T[0]](*params)
+        else:
+            return self[T](self, *params)
