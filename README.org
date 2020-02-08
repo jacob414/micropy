@@ -120,3 +120,94 @@ composition:
 'Hello bar'
 >>>
 #+END_SRC
+
+** Narrowable collections
+
+Uses indexes to narrow collections to fewer values. You can narrow by
+type, a predicate function or value equality. The return value is
+always a new =Narrowable= derived type from the initial
+value. Therefore, you can chain several narrowing operations in the
+same expression.
+
+Errors raised by the narrowing predicates are considered misses.
+
+Some examples:
+
+*** Narrow by type
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable((1,2,3,'foo', 'bar'))[int]
+(1, 2, 3)
+>>>
+#+END_SRC
+
+*** Narrow by callable
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable((1, 2, 3))[lambda x: x > 1]
+(2, 3)
+>>>
+>>> narrowable((1,2,3,'foo', 'bar'))[int]
+(1, 2, 3)
+>>>
+#+END_SRC
+
+*** Supress empty iterable objects
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable([[1], [2], [], []])[lambda x: x[0]]
+[[1], [2]]
+>>>
+#+END_SRC
+
+*** Narrow using exact match
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable((1, 2, 3, 'foo'))['foo']
+('foo',)
+>>>
+#+END_SRC
+
+*** Narrow using a regexp
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> import re
+>>> narrowable(('foo', 'fom', 'jox', 8, 'fim'))[re.compile('fo.*').match]
+('foo', 'fom')
+>>>
+#+END_SRC
+
+*** Combine
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable((1,2,3,'foo', 'bar'))[str]['foo']
+('foo',)
+>>>
+#+END_SRC
+
+** Go deeper
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable((1, 2, 3, (41, 42, 43)))[tuple][0][lambda x: x > 41]
+(42, 43)
+>>>
+#+END_SRC
+
+*** No matches found
+
+If no element matches, an empty version of the collection parameter
+will be returned:
+
+#+BEGIN_SRC python
+>>> from micropy.primitives import narrowable
+>>> narrowable((1,2,3))[lambda x: x > 3]
+()
+>>>
+#+END_SRC
