@@ -231,15 +231,19 @@ class Piping(pipelib.BasePiping):
                  seed: Union[tuple, Any] = (),
                  kind: Callable = map,
                  format: Callable[[Any, None, None], Any] = funcy.identity):
-        self.cursor = ()
-        self.ops = ()
-        self.results = {}
-        self.last_result = ()
-
+        "Initialize a new Piping object."
+        self.reset()
         self.format = format
         self.kind = kind
 
         self.seed = always_tup(seed)
+
+    def reset(self):
+        "Restart this Piping object as if it were new."
+        self.cursor = ()
+        self.ops = ()
+        self.results = {}
+        self.last_result = ()
 
     def sum(self) -> None:
         "Does show"
@@ -372,11 +376,29 @@ class CountPiping(Piping):
 
 
 def PNot(value_or_stepf: Union[Callable, Any]) -> bool:
+    "Unary negate for `LogicPiping`."
     if callable(value_or_stepf):
         stepf = value_or_stepf
     else:
         stepf = funcy.identity
     return funcy.complement(stepf)
+
+
+def P_has(idx: Union[str, Any]) -> Callable[[Any, None, None], Any]:
+    "Does PHas"
+
+    # XXX should be able to reuse `dig.xget()`
+
+    def anyhas(obj: Any) -> Union[bool, Any]:
+        try:
+            return hasattr(obj, idx)
+        except AttributeError:
+            try:
+                return obj[idx]
+            except IndexError:
+                return False
+
+    return anyhas
 
 
 rcurry = funcy.rcurry
@@ -389,11 +411,11 @@ class LogicPiping(Piping):
                  format: Callable[[Any, None, None], Any] = funcy.identity):
         "Sensible default, override for advanced use."
         super().__init__(seed, kind, format)
+        self.truthy = []
         self.conjunctions = 0
 
     def logically(self, stepf, conjunction):
         self.counter = itertools.count(1)
-        self.truthy = []
         if conjunction:
             self.conjunctions += 1
 
@@ -407,6 +429,7 @@ class LogicPiping(Piping):
         return self.queue(gate)
 
     def __call__(self, *params: Any) -> Any:
+        self.truthy = []
         super().__call__(*params)
         passed = funcy.compact(self.truthy)
         if len(passed) == self.conjunctions:
@@ -453,11 +476,23 @@ class callbytype(dict):
     will further process the instance.
 
     """
+    def put(*params: Any) -> Callable:
+        """Decorator to add a function. The types of the parameters. The types
+        that will be matched is taken from the signature of the
+        decorated function.
+
+        """
+        self, fn = params
+        disp = tuple(arg.annotation
+                     for arg in inspect.signature(fn).parameters.values())[1:]
+
+        self[disp] = fn
+
+        return fn
+
     def __call__(self, *params: Any,
                  **opts: Any) -> Union[Iterable[Any], Iterable]:
         "Return the value keyed by the type of parameter `obj`"
-        instance = params[0]
-        T = type(instance)
 
         T = tuple(type(p) for p in params)
         if len(T) == 1:

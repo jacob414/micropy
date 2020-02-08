@@ -3,7 +3,9 @@
 
 import sys
 import io
-from typing import Any, Tuple, List, Mapping, Callable
+from typing import Any, Tuple, List, Mapping, Callable, Optional
+import pdb
+import traceback
 
 import distutils.cmd
 
@@ -139,3 +141,25 @@ class ReviewProject(distutils.cmd.Command):
             ReviewProject.separator_line()
             print()
             print(f'{issues} issues found.')
+
+
+def hook_uncatched(pm_func: Optional[Callable] = None) -> None:
+    """Installs an exception hook that triggers a debugger post-mortem on
+    unhandled exceptions.
+
+    """
+
+    if pm_func is None:
+        pm_func = pdb.post_mortem
+
+    def unhandled(type_: Any, value: Any, tb: Any) -> None:
+        """Catches unhandled exceptions, print stack trace and executes
+        debugger post-mortem entry point.
+
+        """
+        traceback.print_exception(type_, value, tb)
+        print()  # lf
+        pm_func(tb)
+
+    sys.excepthook = unhandled
+    return unhandled

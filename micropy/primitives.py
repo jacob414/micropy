@@ -77,7 +77,7 @@ NarrowingPredicate = Union[Any, Callable[[Any], bool]]
 
 
 class Narrowable(object):
-    def narrow(self, pred: NarrowingPredicate) -> 'Narrowable':
+    def narrow(self, pred: NarrowingPredicate):
         # type: (NarrowingPredicate) -> Narrowable
 
         if callable(pred):
@@ -89,7 +89,7 @@ class Narrowable(object):
             # Narrow by exact match
             return narrowable(self.base([el for el in self if pred == el]))
 
-    def __getitem__(self, idx: Union[Any, NarrowingPredicate]) -> Narrowable:
+    def __getitem__(self, idx: Union[Any, NarrowingPredicate]):
         "Finds individual node in itself or searches.."
         try:
             return narrowable(super().__getitem__(idx))
