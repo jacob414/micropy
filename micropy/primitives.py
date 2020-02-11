@@ -57,7 +57,8 @@ IT = type(int)
 itrt = Iterable
 
 
-def empty_ob(o: Any) -> bool:
+def empty_ob(o):
+    # type: (Any) -> bool
     "Does empty_ob"
     return o is object and len(o.__dict) == 0
 
@@ -77,7 +78,7 @@ NarrowingPredicate = Union[Any, Callable[[Any], bool]]
 
 
 class Narrowable(object):
-    def narrow(self, pred: NarrowingPredicate):
+    def narrow(self, pred):
         # type: (NarrowingPredicate) -> Narrowable
 
         if callable(pred):
@@ -89,7 +90,8 @@ class Narrowable(object):
             # Narrow by exact match
             return narrowable(self.base([el for el in self if pred == el]))
 
-    def __getitem__(self, idx: Union[Any, NarrowingPredicate]):
+    def __getitem__(self, idx):
+        # type: (Any) -> Any
         "Finds individual node in itself or searches.."
         try:
             return narrowable(super().__getitem__(idx))
@@ -101,7 +103,8 @@ class Narrowable(object):
             return self.narrow(idx)
 
 
-def narrowable(src: Union[Any, Collection]) -> Narrowable:
+def narrowable(src):
+    # type: (Union[Any, Collection]) -> Narrowable
     "Creates the base class an initializes a Narrowable collection."
 
     class Narrower(Narrowable, src.__class__):
