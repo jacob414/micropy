@@ -185,6 +185,8 @@ Some examples:
 >>>
 >>> narrowable((1,2,3,'foo', 'bar'))[int]
 (1, 2, 3)
+>>> narrowable((1,2,3,'foo', 'bar'))[lambda x: x > 1]
+(2, 3)  # Note, swallows ValueError raised by 'foo' > 1 etc
 >>>
 #+END_SRC
 
