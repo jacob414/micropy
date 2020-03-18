@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # yapf
 
 import hashlib
@@ -8,6 +7,7 @@ from . import lang
 from dataclasses import dataclass
 from functools import singledispatch
 
+import funcy
 
 @dataclass
 class Attr:
@@ -15,24 +15,8 @@ class Attr:
     PrimType = lang.Undefined
     __bind__ = []
 
-    @staticmethod
-    def split(params):
-        "Does split"
-        name, value = '<anon:??>', None
-        arity = len(params)
-        if arity == 1:
-            value, = params
-            name = '<anon:{}>'.format(lang.typename(value))
-        elif arity == 2:
-            name, value = params
-        else:
-            raise ValueError('Incorrect arity')
-        return name, value
-
     @classmethod
-    def create(cls, *params):
-
-        name, value = Attr.split(params)
+    def create(cls, name, value):
 
         obj = cls.__new__(cls, value)
         obj.name = name
@@ -72,8 +56,7 @@ class Attr:
         return self.eq(self, other)
 
     @classmethod
-    def infer(cls, *params):
-        name, value = Attr.split(params)
+    def infer(cls, name, value):
         PrimType = Attr.infer_types[type(value)]
         return PrimType.create(name, value)
 
@@ -144,7 +127,10 @@ def xget(obj, idx):
         "Does attempt_many"
         vars_ = lang.pubvars(obj)
         attrs = fnmatch.filter(vars_, idx)
-        return [Attr.infer(attr, xget(obj, attr)) for attr in attrs]
+        if funcy.is_seqcoll(obj) or isinstance(obj, set):
+            return attrs
+        else:
+            return [Attr.infer(attr, xget(obj, attr)) for attr in attrs]
 
     try:
         try:

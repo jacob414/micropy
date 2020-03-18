@@ -12,16 +12,6 @@ import funcy
 from funcy import flow
 
 
-def pipe(invalue, *chain):
-    # type: (Any, List[Callable]) -> Any
-    val = chain[0](invalue)
-
-    for step in chain[1:]:
-        val = step(val)
-
-    return val
-
-
 class PipingExperiment(object):
     """An experiment pushing the pipe concept a bit longer. Not sure where
     I'm going with this but curious.
@@ -39,40 +29,8 @@ class PipingExperiment(object):
 
 P = PipingExperiment
 
-
-def raises(ExcType):
-    # type: (Exception) -> Callable
-    """Returns a function that will raise an exception of specified type
-    when called. The exception receives the called functions
-    parameters.
-
-    """
-    def raiser(*args, **kwargs):
-        raise ExcType(*args, **kwargs)
-
-    return raiser
-
-
 IT = type(int)
 itrt = Iterable
-
-
-def empty_ob(o):
-    # type: (Any) -> bool
-    "Does empty_ob"
-    return o is object and len(o.__dict) == 0
-
-
-def func_file(func):
-    return getattr(sys.modules[func.__module__], '__file__', '<nofile>')
-
-
-def nanoast(obj):
-    # type: (obj) -> None
-    "Does nanoast"
-    source = inspect.getsource(obj)
-    return ast.parse(source, func_file(obj), 'single')
-
 
 NarrowingPredicate = Union[Any, Callable[[Any], bool]]
 
@@ -87,14 +45,16 @@ class Narrowable(object):
             return narrowable(self.base([el for el in self if pred_(el)]))
 
         else:
-            # Narrow by exact match
+            # Narrow by exact Match
             return narrowable(self.base([el for el in self if pred == el]))
 
     def __getitem__(self, idx):
         # type: (Any) -> Any
         "Finds individual node in itself or searches.."
         try:
-            return narrowable(super().__getitem__(idx))
+            return self.__class__(self.base.__getitem__(self, idx))
+        except AttributeError:
+            return self.narrow(idx)
         except TypeError:
             return self.narrow(idx)
         except KeyError:

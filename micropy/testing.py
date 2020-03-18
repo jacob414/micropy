@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # yapf
 
 import sys
@@ -30,48 +29,7 @@ class fixture(object):
         return pytest.mark.parametrize(namelist, values)
 
 
-def logcall(fn: Callable, realname: str = None) -> Callable:
-    "A simple composition that will log parameters an results."
-
-    @functools.wraps(fn)
-    def _(*args: Any, **kwargs: Mapping[Any, Any]) -> Any:
-        "Function logger, will log if enclosing functions is turned on"
-        on = logcall._enabled
-        try:
-            name = realname or fn.__name__
-            if kwargs:
-                desc = f'{name}({args}, {kwargs}'
-            else:
-                desc = desc = f'{name}({args})'
-            if on:
-                print(desc)
-            ret = fn(*args, **kwargs)
-            if on:
-                print(f'  -> {ret}')
-            return ret
-        except Exception as exc:
-            if on:
-                print(f'  ..raised {exc}')
-            raise
-
-    @contextmanager
-    def on():
-        logcall._enabled = True
-        try:
-            yield
-        except Exception:
-            raise
-        finally:
-            logcall._enabled = False
-
-        logcall._enabled = False
-
-    logcall.on = on
-    logcall._enabled = False
-    return _
-
-
-class ReviewProject(distutils.cmd.Command):
+class ReviewProject(distutils.cmd.Command):  # pragma: nocov
     user_options: List[str] = []
 
     def initialize_options(self: 'ReviewProject') -> None:
@@ -143,7 +101,8 @@ class ReviewProject(distutils.cmd.Command):
             print(f'{issues} issues found.')
 
 
-def hook_uncatched(pm_func: Optional[Callable] = None) -> None:
+def hook_uncatched(pm_func: Optional[Callable] = None
+                   ) -> None:  # pragma: nocov
     """Installs an exception hook that triggers a debugger post-mortem on
     unhandled exceptions.
 

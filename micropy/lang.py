@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 # yapf
 
 import funcy
-from funcy import flow
 import types
 import numbers
+import copy
 from functools import singledispatch
 from pysistence import Expando
 from typing import Any, Mapping, List, Tuple, Iterable, Generator, Callable, Union
@@ -60,6 +59,8 @@ def pubvars(obj: Any) -> Iterable:
     "Returns all public variables except methods"
     if isdict(obj):
         return obj.keys()
+    if funcy.is_seqcoll(obj) or isinstance(obj, set):
+        return copy.copy(obj)
     else:
         return [
             attr for attr in dir(obj)
@@ -136,10 +137,6 @@ def bind_methods(Base, instance):
     return instance
 
 
-__classmethod__ = classmethod
-__staticmethod__ = staticmethod
-
-
 class Base(object):
     __bind__: List[Tuple[Callable, Any]] = []
 
@@ -161,7 +158,7 @@ class Base(object):
 
         self.method = types.MethodType(bind_method_on_self, self)
 
-    @__staticmethod__
+    @staticmethod
     def __wrapper(fn: Callable, Cls: Any = None, name: str = None):
         "Does __wrapper"
         if name is None:
@@ -181,11 +178,13 @@ class Base(object):
 
         return do_call
 
-    @__classmethod__
+    __classmethod__ = classmethod
+
+    @classmethod
     def classmethod(cls, fn):
         return Base.__wrapper(fn, Cls=cls)
 
-    @__staticmethod__
+    @staticmethod
     def staticmethod(fn: Callable) -> Callable:
         return Base.__wrapper(fn)
 
@@ -262,12 +261,13 @@ class Piping(pipelib.BasePiping):
         self.queue(stepf, x)
         return self
 
-    def queue(self, stepf: Callable[[Any, Any, None], Any], *x: Any) -> None:
+    def queue(self, stepf: Callable[[Any, None, None], Any],
+              *x: Any) -> 'Piping':
         "Does queue"
         self.ops = (*self.ops, ((stepf, x)))
         return self
 
-    def run(self, seed, *x: Any) -> None:
+    def run(self, seed, *x: Any) -> Any:
         "Does do"
         self.cursor = seed
         for op, operands in self.ops:
@@ -372,7 +372,7 @@ class CountPiping(Piping):
 
     def __div__(self, value) -> Piping:
         "Add operation"
-        return self.queue(ops.div, value)
+        return self.queue(ops.truediv, value)
 
 
 def PNot(value_or_stepf: Union[Callable, Any]) -> bool:
@@ -382,23 +382,6 @@ def PNot(value_or_stepf: Union[Callable, Any]) -> bool:
     else:
         stepf = funcy.identity
     return funcy.complement(stepf)
-
-
-def P_has(idx: Union[str, Any]) -> Callable[[Any, None, None], Any]:
-    "Does PHas"
-
-    # XXX should be able to reuse `dig.xget()`
-
-    def anyhas(obj: Any) -> Union[bool, Any]:
-        try:
-            return hasattr(obj, idx)
-        except AttributeError:
-            try:
-                return obj[idx]
-            except IndexError:
-                return False
-
-    return anyhas
 
 
 rcurry = funcy.rcurry
@@ -468,15 +451,15 @@ class LogicPiping(Piping):
         return self.logically(stepf, False)
 
 
-class callbytype(dict):
-    """Crue type match and extractor:
+class Match(dict):
+    """Crue type Match and extractor:
 
     Define a mapping of types. Call for an instance, the parameter
     type should be mapped by `type(obj)` returning a callable that
     will further process the instance.
 
     """
-    def put(*params: Any) -> Callable:
+    def case(*params: Any) -> Callable:
         """Decorator to add a function. The types of the parameters. The types
         that will be matched is taken from the signature of the
         decorated function.

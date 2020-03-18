@@ -1,11 +1,10 @@
 import distutils.cmd
+from contextlib import contextmanager as contextmanager
 from typing import Any, Callable, List, Optional, Tuple
 
 class fixture:
     @staticmethod
     def params(namelist: str, *values: Any) -> Any: ...
-
-def logcall(fn: Callable, realname: str=...) -> Callable: ...
 
 class ReviewProject(distutils.cmd.Command):
     user_options: List[str] = ...

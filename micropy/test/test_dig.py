@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# -*- yapf -*-
+# yapf
 
 import pytest
 
@@ -63,6 +62,17 @@ def test_xget_glob_keys_some():
         'bar': 2,
         'fx': 2
     }, 'f*')) == '[foo=1:int, fx=2:int]'
+
+
+@pytest.mark.parametrize("itr",(
+    ['foo', 'bar', 'fx'],
+    ('foo', 'bar', 'fx'),
+))
+def test_xget_glob_members_some(itr):
+    # type: () -> None
+    "Should get keys of a sequence/collection"
+    
+    assert str(dig.xget(itr, 'f*')) == "['foo', 'fx']"
 
 
 def test_xget_glob_attrs_all():

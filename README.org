@@ -147,7 +147,7 @@ composition:
 
 #+BEGIN_SRC python
 >>> from micropy import lang
->>> foo = lang.callbytype({int: lambda x: x*100, str: lambda x: f'Hello {x}'})
+>>> foo = lang.Match({int: lambda x: x*100, str: lambda x: f'Hello {x}'})
 >>> foo(10)
 1000
 >>> foo('bar')

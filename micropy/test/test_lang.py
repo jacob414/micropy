@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 # yapf
 
 import pytest
 
 from micropy import lang
-from micropy.testing import fixture, logcall
+from micropy.testing import fixture
 
 from typing import Any
 import operator as ops
@@ -108,6 +107,18 @@ def test_method_on_type_nary(Alt: Alt) -> None:
     assert alt0.foo == 'bar'
 
 
+@fixture.params(
+    "func, expected",
+    ((lambda: 0), 0),
+    ((lambda x: x), 1),
+    ((lambda x, y: (x, y)), 2),
+    ((lambda x, y, z: x), 3),
+)
+def test_arity(func, expected) -> None:
+    "Should arity"
+    assert lang.arity(func) == expected
+
+
 def test_mkclass_bound_method(Alt: Alt) -> None:
     "Should be able to add methods to individual objects."
     alt1, alt2 = Alt(), Alt()
@@ -197,7 +208,7 @@ class FilterPipeExample(lang.Piping):
 
 
 filter_from_8 = lambda: (FilterPipeExample(
-    8, kind=filter, format=logcall(lambda x: x > 10, 'over10')) + 1 + 1)
+    8, kind=filter, format=(lambda x: x > 10)) + 1 + 1)
 
 
 @fixture.params("fpipe, param, want",
@@ -234,7 +245,7 @@ def test_piping_as_mapping() -> None:
 got_a, got_b, none = E(a=1), E(b=1), E(c=1)
 got_ab, got_bc = E(a=1, b=1), E(b=1, c=1)
 
-has = lang.P_has
+has = lambda name: lambda obj: hasattr(obj, name)
 
 only_a = lambda: lang.LogicPiping() // has('a')
 a_and_b = lambda: lang.LogicPiping() // has('a') & has('b')
@@ -270,12 +281,12 @@ def test_logic_piping(lpipe, param, want) -> None:
     assert lpipe(param) == want
 
 
-def dispr() -> lang.callbytype:
+def dispr() -> lang.Match:
     "Does dispr"
 
-    disp = lang.callbytype({int: lambda x: x + 1})
+    disp = lang.Match({int: lambda x: x + 1})
 
-    @disp.put
+    @disp.case
     def add_two_int(self, a: int, b: int) -> int:
         "Fixture function: called with 2 integers, should add the integers."
         return a + b
